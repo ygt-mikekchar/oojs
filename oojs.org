@@ -59,8 +59,7 @@ exceptions, the values themselves are immutable.  For example:
 
   return({a: a, b: b});
 #+END_SRC
-#+RESULTS:
-: { a: 10, b: 5 }
+~: { a: 10, b: 5 }~
 
 Another way to think about this is that we can point our variable (via
 assignment) to any value we want, but the value itself can not
@@ -89,8 +88,7 @@ For example:
 
   return({a: a});
 #+END_SRC
-#+RESULTS:
-: { a: 'bar' }
+~: { a: 'bar' }~
 
 As you might imagine, arrays are mutable:
 
@@ -102,8 +100,7 @@ As you might imagine, arrays are mutable:
 
   return({a: a, b: b});
 #+END_SRC
-#+RESULTS:
-: { a: [ 1, 2, 4 ], b: [ 1, 2, 4 ] }
+~: { a: [ 1, 2, 4 ], b: [ 1, 2, 4 ] }~
 
 The other kind of value that is mutable in JavaScript is the "object".
 An "object" is not as special as you might imagine from its name.  In
@@ -124,8 +121,7 @@ Here is an example of the mutability of dictionaries:
 
   return({a: a, b: b});
 #+END_SRC
-#+RESULTS:
-: { a: { foo: 2 }, b: { foo: 2 } }
+~: { a: { foo: 2 }, b: { foo: 2 } }~
 
 It is important to understand that even though the *variables* "a" and
 "b" are immutable (const), the *value* that they point to is not.  Again, with
@@ -141,8 +137,7 @@ example:
 
   return({a: a, b: b});
 #+END_SRC
-#+RESULTS:
-: { a: { foo: 2 }, b: { foo: 1 } }
+~: { a: { foo: 2 }, b: { foo: 1 } }~
 
 *** Functions, Closures and Currying
 
@@ -164,12 +159,11 @@ Here is an example:
 
   return({a: a, b: b, result_a1: result_a1, result_a2: result_a2, result_b: result_b });
 #+END_SRC
-#+RESULTS:
-: { a: [Function: subtract],
+~: { a: [Function: subtract],
 :   b: [Function: add],
 :   result_a1: 3,
 :   result_a2: -1,
-:   result_b: 3 }
+:   result_b: 3 }~
 
 While admirably clear, this syntax is pretty awkward for using
 functions in any more than a rudimentary way.  ES6 introduced a
