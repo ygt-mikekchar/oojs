@@ -59,7 +59,9 @@ exceptions, the values themselves are immutable.  For example:
 
   return({a: a, b: b});
 #+END_SRC
-  > { a: 10, b: 5 }
+#+BEGIN_SRC
+> { a: 10, b: 5 }
+#+END_SRC
 
 Another way to think about this is that we can point our variable (via
 assignment) to any value we want, but the value itself can not
@@ -88,7 +90,9 @@ For example:
 
   return({a: a});
 #+END_SRC
-  > { a: 'bar' }
+#+BEGIN_SRC
+> { a: 'bar' }
+#+END_SRC
 
 As you might imagine, arrays are mutable:
 
@@ -100,7 +104,9 @@ As you might imagine, arrays are mutable:
 
   return({a: a, b: b});
 #+END_SRC
-  > { a: [ 1, 2, 4 ], b: [ 1, 2, 4 ] }
+#+BEGIN_SRC js
+> { a: [ 1, 2, 4 ], b: [ 1, 2, 4 ] }
+#+END_SRC
 
 The other kind of value that is mutable in JavaScript is the "object".
 An "object" is not as special as you might imagine from its name.  In
@@ -121,7 +127,9 @@ Here is an example of the mutability of dictionaries:
 
   return({a: a, b: b});
 #+END_SRC
-  > { a: { foo: 2 }, b: { foo: 2 } }
+#+BEGIN_SRC js
+> { a: { foo: 2 }, b: { foo: 2 } }
+#+END_SRC
 
 It is important to understand that even though the *variables* "a" and
 "b" are immutable (const), the *value* that they point to is not.  Again, with
@@ -137,7 +145,9 @@ example:
 
   return({a: a, b: b});
 #+END_SRC
-  > { a: { foo: 2 }, b: { foo: 1 } }
+#+BEGIN_SRC
+> { a: { foo: 2 }, b: { foo: 1 } }
+#+END_SRC
 
 *** Functions, Closures and Currying
 
@@ -159,11 +169,13 @@ Here is an example:
 
   return({a: a, b: b, result_a1: result_a1, result_a2: result_a2, result_b: result_b });
 #+END_SRC
-  > { a: [Function: subtract],
-      b: [Function: add],
-      result_a1: 3,
-      result_a2: -1,
-      result_b: 3 }
+#+BEGIN_SRC
+> { a: [Function: subtract],
+    b: [Function: add],
+    result_a1: 3,
+    result_a2: -1,
+    result_b: 3 }
+#+END_SRC
 
 While admirably clear, this syntax is pretty awkward for using
 functions in any more than a rudimentary way.  ES6 introduced a
@@ -182,12 +194,13 @@ that notation:
 
   return({a: a, b: b, result_a1: result_a1, result_a2: result_a2, result_b: result_b});
 #+END_SRC
-#+RESULTS:
-: { a: [Function: a],
-:   b: [Function: a],
-:   result_a1: 3,
-:   result_a2: -1,
-:   result_b: 3 }
+#+BEGIN_SRC
+> { a: [Function: a],
+    b: [Function: a],
+    result_a1: 3,
+    result_a2: -1,
+    result_b: 3 }
+#+END_SRC
 
 Not only can functions be assigned to variables, they can also be
 passed to and returned from functions.  This leads us to another
@@ -204,8 +217,9 @@ An example is probably the easiest way to describe a closure.
 
   return({inc_5: inc(5), add_two_to_6: add_two(6), inc_3: inc(3)});
 #+END_SRC
-#+RESULTS:
-: { inc_5: 6, add_two_to_6: 8, inc_3: 4 }
+#+BEGIN_SRC
+> { inc_5: 6, add_two_to_6: 8, inc_3: 4 }
+#+END_SRC
 
 What is happening here?  The function "add" takes a single parameter,
 "x", and returns a new function that takes a single parameter y.  The
@@ -290,8 +304,9 @@ differently under the hood):
 
   return({a: a});
 #+END_SRC
-#+RESULTS:
-: { a: 4 }
+#+BEGIN_SRC
+> { a: 4 }
+#+END_SRC
 
 *** I lied: One more mutable value
 
@@ -307,8 +322,9 @@ one can do the following:
 
   return({add: add});
 #+END_SRC
-#+RESULTS:
-: { add: { [Function: add] foo: 'bar' } }
+#+BEGIN_SRC
+> { add: { [Function: add] foo: 'bar' } }
+#+END_SRC
 
 In my mind this is incredibly unfortunate and it really only exists to
 support some features of the built in object system.  We won't be
@@ -322,8 +338,9 @@ Strangely enough, even arrays are dictionaries:
 
   return({a: a});
 #+END_SRC
-#+RESULTS:
-: { a: [ 1, 2, foo: 'bar' ] }
+#+BEGIN_SRC
+> { a: [ 1, 2, foo: 'bar' ] }
+#+END_SRC
 
 We neither need, nor want this functionality, so we'll just pretend
 that it doesn't exist!  In our lovely play world, we don't need to
@@ -391,8 +408,9 @@ with a function.
 
   return({area_5_2: area(5, 2)});
 #+END_SRC
-#+RESULTS:
-: { area_5_2: 10 }
+#+BEGIN_SRC
+> { area_5_2: 10 }
+#+END_SRC
 
 This is not very exciting as it stands, but it gives us some insight
 about rectangles: they have a length and a width.  Let's write another
@@ -405,8 +423,9 @@ function that explores other properties of rectangles.
 
   return({translate_1_2_4_5: translate(1, 2, 4, 5)});
 #+END_SRC
-#+RESULTS:
-: { translate_1_2_4_5: { x: 5, y: 7 } }
+#+BEGIN_SRC
+> { translate_1_2_4_5: { x: 5, y: 7 } }
+#+END_SRC
 
 In this case, "translate" moves the rectangle to some other point on
 the plane.  We have the "x" and "y" coordinates for the position of
@@ -444,8 +463,9 @@ already seen a way to do that: closures.  Consider the following:
 
   return({translate_4_5: point.translate(4, 5)});
 #+END_SRC
-#+RESULTS:
-: { translate_4_5: { translate: [Function: translate] } }
+#+BEGIN_SRC
+> { translate_4_5: { translate: [Function: translate] } }
+#+END_SRC
 
 Let's just walk through this.  "Point" is a function that takes "x"
 and "y" coordinates.  It returns a dictionary that contains a single
@@ -479,8 +499,9 @@ containing a function.  Let's amend this slightly.
     translated: translated.show()
   });
 #+END_SRC
-#+RESULTS:
-: { point: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
+#+BEGIN_SRC
+> { point: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
+#+END_SRC
 
 Now we've add an accessor that let's us inspect the private
 attributes.  The interesting thing here is that our Point objects (at
@@ -493,8 +514,9 @@ We can't change it.  For example:
 
   return({point: point.show()});
 #+END_SRC
-#+RESULTS:
-: { point: { x: 1, y: 2 } }
+#+BEGIN_SRC
+> { point: { x: 1, y: 2 } }
+#+END_SRC
 
 "show" returns a *copy* of the attributes, so there is still no way
 for us to mutate the object.  In this way, I think we're a lot closer
@@ -531,8 +553,9 @@ What if we wanted a mutable Point object?
     point: point.show(),
   });
 #+END_SRC
-#+RESULTS:
-: { point: { x: 23, y: 42 } }
+#+BEGIN_SRC
+> { point: { x: 23, y: 42 } }
+#+END_SRC
 
 This gives us a mutable point.  It works because parameters (and hence
 the variables being closed over) are mutable in JavaScript.  All
@@ -590,7 +613,8 @@ fashion as the Point class.
     translated: rect.translate(10, 20).show(),
   });
 #+END_SRC
-#+RESULTS:
-: { rect: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
-:   area: 20,
-:   translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 } }
+#+BEGIN_SRC
+> { rect: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
+    area: 20,
+    translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 } }
+#+END_SRC
