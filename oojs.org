@@ -1,0 +1,602 @@
+* Exploring OO with JavaScript
+
+One day at work, we were discussing languages that we enjoyed working
+with.  Some people expressed surprise that very near the top of my
+preferences I listed JavaScript.  It's a language that many people
+begrudgingly use, but only when they have no other choice.  Similarly,
+I frequently bump into blogs on the internet expressing a distaste
+(verging on disgust, in some cases) for object oriented programming.
+
+If you hang around in the programming industry long enough you may
+notice a common occurrence.  Sometimes someone has a gem of an idea.
+It is not fully formed yet, but it has a lot of promise.  They work on
+the idea for a while and word spreads.  Eventually it becomes well
+known, with many people experimenting with it.  Evolution of the idea follows
+several paths, each proponent injecting their own ideas, both good and
+bad until the most widespread versions of the idea no longer closely
+match the original.
+
+It's from that perspective that I find myself reflecting on both
+JavaScript and OO.  The original ideas are compelling, but the popular
+versions of their evolution are fraught with problems.  In this post, I
+don't intend to try to convince the reader that either OO or JavaScript is
+something that they want to or should be using.  My goal is much more
+modest.  I simply want to show a different way of looking at them.
+
+With that said, I'll dive into the work.  I want to introduce a simple
+object framework using only very basic language features included in JavaScript.
+Again, the idea here is not to suggest that this is a good way of
+programming, but rather to explore a different way of looking at OO
+and JavaScript.  I think most programmers will be able to follow along
+even if they are not particularly familiar with JavaScript.
+
+** Basic JavaScript Features
+
+I'm going to use a few basic features of JavaScript in this endeavour.
+I'll use ES6 notation, because I find it more convenient, but the vast
+majority of what I'm doing can be done just as easily in earlier
+versions of the language.  I'll point out any potential differences
+along the way.  However, because some people may not be familiar with
+all of the features I'll be using in JavaScript, I'll try to explain
+them first.
+
+*** References and Mutability
+
+JavaScript is a garbage collected language.  What that means is that
+the programmer does not explicitly allocate memory.  A separate
+facility in the run-time system occasionally looks for data that is no
+longer being used and frees the memory.  Variables in JavaScript are
+references that point to allocated memory.
+
+Early versions of JavaScript had only mutable variables.  That is, you
+can change the value that they point to.  However, with two
+exceptions, the values themselves are immutable.  For example:
+
+#+BEGIN_SRC js
+  var a = 5;
+  var b = a;
+  a += 5;
+
+  return({a: a, b: b});
+#+END_SRC
+#+RESULTS:
+: { a: 10, b: 5 }
+
+Another way to think about this is that we can point our variable (via
+assignment) to any value we want, but the value itself can not
+change.  The value 5 does not suddenly become 6, but our variable can
+point to 5 or 6 (or any other value).  In this way, the reference is
+mutable (can be changed) while the value is immutable (can not be
+changed).  You may be forgiven for thinking this is obvious -- where
+would we be if 5 suddenly became 6?  However, for other kinds of data
+it's not so obvious.
+
+This kind of variable is function scoped (it exists within the function
+in which it was defined), but ES6 introduced 2 other kinds of variables:
+"let" and "const".  "let" variables are mutable, but block scoped and
+"const" variables are immutable while also being block scoped.  With
+"const" variables, you can not change the reference after they have
+been assigned once.  If the variable is pointing to an immutable
+value, then the variable is truly immutable.
+
+Surprisingly, even string values are immutable in JavaScript (although,
+unfortunately it doesn't throw an error if you try to mutate them).
+For example:
+
+#+BEGIN_SRC js
+  var a = "bar";
+  a[2] = 'z';
+
+  return({a: a});
+#+END_SRC
+#+RESULTS:
+: { a: 'bar' }
+
+As you might imagine, arrays are mutable:
+
+#+BEGIN_SRC js
+  var a = [1, 2, 3];
+  var b = a;
+
+  a[2] = 4;
+
+  return({a: a, b: b});
+#+END_SRC
+#+RESULTS:
+: { a: [ 1, 2, 4 ], b: [ 1, 2, 4 ] }
+
+The other kind of value that is mutable in JavaScript is the "object".
+An "object" is not as special as you might imagine from its name.  In
+other languages it would be called a "dictionary", "hash", "record" or
+"struct".  The name is quite unfortunate because it conflates the OO
+notion of "object" with something that can be used to construct an
+object.  To avoid that confusion, I'm going to call it a "dictionary"
+in this post, which is what Smalltalk calls it.  After all, JavaScript
+was originally intended to be similar to Smalltalk, so I think it's
+appropriate.  I apologise in advance if you find it confusing.
+
+Here is an example of the mutability of dictionaries:
+
+#+BEGIN_SRC js
+  const a = {foo: 1};
+  const b = a;
+  a.foo = 2;
+
+  return({a: a, b: b});
+#+END_SRC
+#+RESULTS:
+: { a: { foo: 2 }, b: { foo: 2 } }
+
+It is important to understand that even though the *variables* "a" and
+"b" are immutable (const), the *value* that they point to is not.  Again, with
+a slight quibble that I will explain shortly, the only values that are
+mutable in JavaScript are arrays and dictionaries.  It's also important to
+realise that *assignment* points a variable to a *new value*.  For
+example:
+
+#+BEGIN_SRC js
+  let a = {foo: 1};
+  let b = a;
+  a = {foo: 2};
+
+  return({a: a, b: b});
+#+END_SRC
+#+RESULTS:
+: { a: { foo: 2 }, b: { foo: 1 } }
+
+*** Functions, Closures and Currying
+
+In JavaScript, functions are "first class citizens".  In other words
+a function is a value just like any other value.  For most purposes,
+function values are also immutable: there is no way to change the
+value of a function (in pretty much the same way it is impossible to
+change the value of "5").
+
+Here is an example:
+
+#+BEGIN_SRC js
+  let a = function add(x, y) { return x + y };
+  let b = a;
+  let result_a1 = a(1, 2);
+  a = function subtract(x, y) { return x - y };
+  let result_a2 = a(1, 2);
+  let result_b = b(1, 2);
+
+  return({a: a, b: b, result_a1: result_a1, result_a2: result_a2, result_b: result_b });
+#+END_SRC
+#+RESULTS:
+: { a: [Function: subtract],
+:   b: [Function: add],
+:   result_a1: 3,
+:   result_a2: -1,
+:   result_b: 3 }
+
+While admirably clear, this syntax is pretty awkward for using
+functions in any more than a rudimentary way.  ES6 introduced a
+notation for lambdas (unnamed functions) which is more convenient.  I
+will be using it for the remainder of this post.  Of course the
+downside is that lambdas have no name.  Here is the same code using
+that notation:
+
+#+BEGIN_SRC js
+  let a = (x, y) => x + y;
+  let b = a;
+  let result_a1 = a(1, 2);
+  a = (x, y) => x - y;
+  let result_a2 = a(1, 2);
+  let result_b = b(1, 2);
+
+  return({a: a, b: b, result_a1: result_a1, result_a2: result_a2, result_b: result_b});
+#+END_SRC
+#+RESULTS:
+: { a: [Function: a],
+:   b: [Function: a],
+:   result_a1: 3,
+:   result_a2: -1,
+:   result_b: 3 }
+
+Not only can functions be assigned to variables, they can also be
+passed to and returned from functions.  This leads us to another
+feature, which is common in many popular languages today, but which
+was fairly uncommon when JavaScript was first introduced: closures.
+An example is probably the easiest way to describe a closure.
+
+#+BEGIN_SRC js
+  const add = (x) => {
+    return (y) => x + y;
+  };
+  const inc = add(1);
+  const add_two = add(2);
+
+  return({inc_5: inc(5), add_two_to_6: add_two(6), inc_3: inc(3)});
+#+END_SRC
+#+RESULTS:
+: { inc_5: 6, add_two_to_6: 8, inc_3: 4 }
+
+What is happening here?  The function "add" takes a single parameter,
+"x", and returns a new function that takes a single parameter y.  The
+function it returns adds "x" and "y" together.  The function returned
+by "add" needs to remember "x", even though "x" is no longer in scope.
+We say that the function returned by "add" "closes over x".  That
+function is known as a "closure".
+
+It is important to understand that a closure remembers the value of
+the variable *when it was constructed*, not when it was called.  So in
+this case, "inc" always uses the value of 1 for x, while "add_two"
+always uses the value of 2 for x.  As long as the value is immutable,
+it can not change.  However, you must beware if you close over a
+dictionary (aka object) or array because they are *not* immutable.  This can be
+the source of hard to understand errors!
+
+In functional programming, this kind of construction is very popular.
+Earlier we saw a definition of "add" that took 2 parameters ("x" and
+y").  Just to remind you:
+
+#+BEGIN_SRC js
+  const add = (x, y) => x + y;
+#+END_SRC
+
+Note that ES6 allows you to omit the parentheses in the parameter list
+if there is exactly one parameter.  You can also omit the braces and
+"return" statement in the body if it is composed of exactly one
+expression.  With that we can refactor our "add" returning a closure
+to something that more closely resembles what you would find in a
+functional programming language:
+
+#+BEGIN_SRC js
+  const add = x => y =>
+    x + y;
+#+END_SRC
+
+Before ES6 you would have to write this as:
+
+#+BEGIN_SRC js
+  var add = function(x) {
+    return function(y) {
+      return x + y;
+    };
+  };
+#+END_SRC
+
+Again, the second form is easier to understand what it is doing under
+the hood, but the first is dramatically easier to type and to reason
+about, once you understand it.
+
+Syntax aside, this is an example of "currying".  Every function that
+can take 2 parameters can be converted into a function that takes 1
+parameter and returns a closure that takes 1 parameter.  You can
+extend that to functions with any number of parameters, but I will
+leave that as an exercise for the reader.
+
+The functions we defined earlier, "inc" and "add_two", are examples of
+"partially applied functions".  "Partially applied" means that only
+some of the parameters have been specified: returning a function that
+allows you to specify the remaining parameters.  Just to remind you,
+here's the definition of "inc" again:
+
+#+BEGIN_SRC js
+  const inc = add(1);
+#+END_SRC
+
+You'll notice that while "inc" is a function, we don't specify the
+parameter in its definition.  This is called "point free form" in
+functional programming languages.  While it takes some getting used
+to, it can sometimes make the code more clear: "inc" is equivalent to
+adding one to something.
+
+Note that we can specify all of the parameters to "add" if we want to,
+although the syntax is slightly unfortunate in JavaScript (a result of
+early demands to make it look like Java, even though it operates
+differently under the hood):
+
+#+BEGIN_SRC js
+  const add = x => y =>
+    x + y;
+  const a = add(1)(3);
+
+  return({a: a});
+#+END_SRC
+#+RESULTS:
+: { a: 4 }
+
+*** I lied: One more mutable value
+
+There is one last quibble that I have to clear up before we move on to
+the meat of this post.  Functions not only hold the value of a
+function, they are *also* dictionaries (aka objects).  For example,
+one can do the following:
+
+#+BEGIN_SRC js
+  const add = x => y =>
+    x + y;
+  add.foo = "bar";
+
+  return({add: add});
+#+END_SRC
+#+RESULTS:
+: { add: { [Function: add] foo: 'bar' } }
+
+In my mind this is incredibly unfortunate and it really only exists to
+support some features of the built in object system.  We won't be
+using this facility, so for the purposes of this post you can assume
+that function values are immutable.
+
+Strangely enough, even arrays are dictionaries:
+#+BEGIN_SRC js
+  const a = [1, 2];
+  a.foo = "bar";
+
+  return({a: a});
+#+END_SRC
+#+RESULTS:
+: { a: [ 1, 2, foo: 'bar' ] }
+
+We neither need, nor want this functionality, so we'll just pretend
+that it doesn't exist!  In our lovely play world, we don't need to
+practice "defence against the bad programmers", so it will be
+relatively easy to restrain ourselves to the subset of the language
+that appeals to us.
+
+** Building a Rudimentary Object System
+
+With just these facilities, we can now build a rudimentary object
+system.  Of course JavaScript already *has* an object system, but I
+think it suffers from the original requirement that it resemble Java
+in some way.  I would like to step back a bit and consider how we
+might build an object system that operates differently.
+
+The astute reader will notice by now that I have not really discussed
+OO at all up until this point.  In fact, everything I've talked about
+is really the basics of *functional* programming.  I hope you can see
+that, if you are careful, JavaScript could make a pretty good functional
+language.  How does that relate to the Object Oriented paradigm?
+
+*** What is Object Oriented Programming?
+
+You may be familiar with definitions of Object Oriented Programming
+(OOP) that involve things like "inheritance", "polymorphism",
+"encapsulation", etc, etc.  However, in my own career dominated mostly
+by object oriented programming, I have found that these definitions
+fall short.  Indeed, all of those things are present in object
+oriented systems, but I often feel that they fall short of the point.
+
+OOP evolved from several different backgrounds, which is, I think, one
+of the reasons why our view is so muddled now. We have conflated a
+bunch of competing ideas, not all of which are compatible with one
+another.  For the purposes of this post I'm going to fall back on a
+very simple description attributed to Alan Kay, one of the original
+progenitors of OOP:
+
+"OOP to me means only messaging, local retention and protection and
+hiding of state-process, and extreme LateBinding of all things."
+
+I don't necessarily know exactly what Alan Kay means by this, but I
+think it is a useful place to start exploring.
+
+*** Defining a Rectangle
+
+First, I have to admit that this example is highly contrived.  One of
+the worst problems of explanations of OOP is the use of toy problems
+where real world issues rarely rear their ugly heads.  However, as I
+stated in the introduction, my goal here is not to explain, or sell
+you on OOP.  I merely want to look at the issue from a different angle
+and hopefully start a thought process for carrying it on further.  If
+it never goes any further than that, I will still be happy.
+
+With that disclaimer, let's start in a kind of unorthodoxed way.  I
+think most people would start their object oriented modelling by
+defining what a rectangle looks like: i.e. what a struct or dictionary
+of it would look like.  However, Alan Kay doesn't talk at all about
+the structure of objects in his very concise definition.  He talks
+about messaging, dealing with state, and late binding.  Let's start
+with a function.
+
+#+BEGIN_SRC js
+  const area = (length, width) =>
+    length * width;
+
+  return({area_5_2: area(5, 2)});
+#+END_SRC
+#+RESULTS:
+: { area_5_2: 10 }
+
+This is not very exciting as it stands, but it gives us some insight
+about rectangles: they have a length and a width.  Let's write another
+function that explores other properties of rectangles.
+
+#+BEGIN_SRC js
+  const translate = (x, y, dx, dy) => {
+    return { x: x + dx, y: y + dy };
+  };
+
+  return({translate_1_2_4_5: translate(1, 2, 4, 5)});
+#+END_SRC
+#+RESULTS:
+: { translate_1_2_4_5: { x: 5, y: 7 } }
+
+In this case, "translate" moves the rectangle to some other point on
+the plane.  We have the "x" and "y" coordinates for the position of
+the rectangle, and the amount we want to move in both the x and y
+directions. It returns the position where we will move to.  In this
+case, I'm returning a dictionary.  However, I'm not very happy with
+this implementation.  The most glaring problem is that the position
+I'm passing in (two numbers: "x" and "y") is not the same type as the
+position I'm returning (a dictionary containing "x" and "y").
+
+The other thing I notice upon reflecting on this code is that
+"translate" is not strictly a behaviour of a rectangle.  It's a
+behaviour of the point that represents the rectangle's position.
+Let's back up and define that point before we go any further.
+
+*** Create a Point "class"
+
+Now the most obvious way to proceed is to represent a point as a
+dictionary, exactly the way we did when returned the translated
+position.  However, looking at Alan Kay's description of OOP, I'm not
+convinced that this will bring us closer to his vision.  Is there a
+different way of representing the object?  One of the clues might come
+from the phrase "local retention ... of state-process".  We have
+already seen a way to do that: closures.  Consider the following:
+
+#+BEGIN_SRC js
+  const Point = (x, y) => {
+    return {
+      translate: (dx, dy) =>
+        Point(x + dx, y + dy)
+    };
+  };
+
+  const point = Point(1, 2);
+
+  return({translate_4_5: point.translate(4, 5)});
+#+END_SRC
+#+RESULTS:
+: { translate_4_5: { translate: [Function: translate] } }
+
+Let's just walk through this.  "Point" is a function that takes "x"
+and "y" coordinates.  It returns a dictionary that contains a single
+entry: "translate".  Translate contains a function that runs the
+"Point" function, with updated coordinates.  If you are familiar with
+OOP languages, you might recognise "Point" as being a constructor.
+
+What's unusual is that we *don't seem to store the attributes of Point
+anywhere!*  In reality, they *are* stored, but in the closure,
+"translate".  The really interesting thing is that there is literally
+no way for us to access the values stored in our Point object.  Even
+when we dump the object, we just see that we have a dictionary
+containing a function.  Let's amend this slightly.
+
+#+BEGIN_SRC js
+  const Point = (x, y) => {
+    return {
+      show: () => {
+        return {x: x, y: y};
+      },
+      translate: (dx, dy) =>
+        Point(x + dx, y + dy)
+    };
+  };
+
+  const point = Point(1, 2);
+  const translated = point.translate(4, 5);
+
+  return({
+    point: point.show(),
+    translated: translated.show()
+  });
+#+END_SRC
+#+RESULTS:
+: { point: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
+
+Now we've add an accessor that let's us inspect the private
+attributes.  The interesting thing here is that our Point objects (at
+least from the perspective of the attributes) is *still* immutable.
+We can't change it.  For example:
+
+#+BEGIN_SRC js
+  const point = Point(1, 2);
+  point.show().x = 42;
+
+  return({point: point.show()});
+#+END_SRC
+#+RESULTS:
+: { point: { x: 1, y: 2 } }
+
+"show" returns a *copy* of the attributes, so there is still no way
+for us to mutate the object.  In this way, I think we're a lot closer
+to Alan Kay's description: "local retention and protection and
+hiding of state-process".  Our state is hidden by default.  Even if we
+show the values with an accessor, the state is still immutable.  Of
+particular interest to me is that as long as we restrict ourselves to
+a very basic subset of JavaScript, the code is also extremely easy to
+write and read (apart from the ugly way one must return dictionaries).
+It also requires no new syntax for the language.
+
+What if we wanted a mutable Point object?
+
+#+BEGIN_SRC js
+  const Point = (x, y) => {
+    return {
+      show: () => {
+        return {x: x, y: y};
+      },
+      setX: (new_x) =>
+        x = new_x,
+      setY: (new_y) =>
+        y = new_y,
+      translate: (dx, dy) =>
+        Point(x + dx, y + dy)
+    };
+  };
+
+  const point = Point(1, 2);
+  point.setX(23);
+  point.setY(42);
+
+  return({
+    point: point.show(),
+  });
+#+END_SRC
+#+RESULTS:
+: { point: { x: 23, y: 42 } }
+
+This gives us a mutable point.  It works because parameters (and hence
+the variables being closed over) are mutable in JavaScript.  All
+things being equal, it's easier to reason about immutable data
+structures than mutable ones, so for now we won't include those setters.
+
+It interesting to consider that our Point "class" is just a function.
+Although the approach to creating objects differs, this is one of the
+things that appeals to me about Javascript's approach to OOP.  There
+is no particular reason to create new syntax around something so
+simple.  Just as in FP, the state in the system is simply the
+application of parameters to a function.
+
+Another interesting thing is that our "object" is just a dictionary of
+closures -- in essence a dictionary of partially applied functions.
+As you will see, we can use this fact to implement subtype
+polymorphism extremely simply.  Although some would consider a
+function as a perversion of the meaning of a "message", as long as the
+binding is late enough, we should be able to fulfill Alan Kay's ideas.
+
+*** Returning to Rectangle
+
+Now that we've defined a Point class.  We can return to our problem of
+translating a rectangle.  Let's write a Rectangle class in the same
+fashion as the Point class.
+
+#+BEGIN_SRC js
+  const Point = (x, y) => {
+    return {
+      show: () => {
+        return {x: x, y: y};
+      },
+      translate: (dx, dy) =>
+        Point(x + dx, y + dy)
+    };
+  };
+
+  const Rect = (pos, length, height) => {
+    return {
+      show: () => {
+        return {pos: pos.show(), length: length, height: height};
+      },
+      area: () =>
+        length * height,
+      translate: (dx, dy) =>
+        Rect(pos.translate(dx, dy), length, height)
+    };
+  };
+
+  const rect = Rect(Point(1, 2), 4, 5);
+
+  return({
+    rect: rect.show(),
+    area: rect.area(),
+    translated: rect.translate(10, 20).show(),
+  });
+#+END_SRC
+#+RESULTS:
+: { rect: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
+:   area: 20,
+:   translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 } }
