@@ -486,8 +486,11 @@ another.  For the purposes of this post I'm going to fall back on a
 very simple description attributed to Alan Kay, one of the original
 progenitors of OOP:
 
-"OOP to me means only messaging, local retention and protection and
-hiding of state-process, and extreme LateBinding of all things."
+#+BEGIN_QUOTE
+OOP to me means only messaging, local retention and protection and
+hiding of state-process, and extreme LateBinding of all things. --
+Alan Kay
+#+END_QUOTE
 
 I don't necessarily know exactly what Alan Kay means by this, but I
 think it is a useful place to start exploring.
