@@ -344,40 +344,6 @@ operates differently under the hood):
 > { a: 4 }
 #+END_SRC
 
-*** A few other things are also Dictionaries (aka Objects)
-
-There is one last issue that I want to clear up before we move on.
-Functions not only hold the value of a function, they are *also*
-dictionaries (aka objects).  For example, one can do the following:
-
-#+BEGIN_SRC js
-  const add = x => y =>
-    x + y;
-  add.foo = "bar";
-
-  return({add: add});
-#+END_SRC
-#+BEGIN_SRC js
-> { add: { [Function: add] foo: 'bar' } }
-#+END_SRC
-
-Strangely enough, even arrays are dictionaries:
-#+BEGIN_SRC js
-  const a = [1, 2];
-  a.foo = "bar";
-
-  return({a: a});
-#+END_SRC
-#+BEGIN_SRC js
-> { a: [ 1, 2, foo: 'bar' ] }
-#+END_SRC
-
-We neither need, nor want this functionality, so we'll just pretend
-that it doesn't exist!  In our lovely play world, we don't need to
-practice "defence against the bad programmers", so it will be
-relatively easy to restrain ourselves to the subset of the language
-that appeals to us.
-
 *** Idempotency
 
 Earlier I mentioned that as long as the variables closed over in a
@@ -430,7 +396,7 @@ what state caused a problem, so whenever possible we want to write
 idempotent functions.
 
 We have to be especially careful when we close over mutable values.
-Even if you don't reasign the closed over variable, the closure can be
+Even if you don't reassign the closed over variable, the closure can be
 mutated simply by mutating the value.  Here is an example:
 
 #+BEGIN_SRC js
@@ -452,10 +418,10 @@ mutated simply by mutating the value.  Here is an example:
 
 Even though we never reassigned the variable ~x~, the closure is not
 idempotent simply because ~x~ was mutable.  This is an important
-lession: mutability is a bit like a disease.  One piece of mutable
+lesson: mutability is a bit like a disease.  One piece of mutable
 data can spread the mutability to other data structures if you do not
 take care to isolate it.  This is not a problem with OOP, it is just
-the nature of the beast.
+the nature of programming.
 
 ** Building a Rudimentary Object System
 
