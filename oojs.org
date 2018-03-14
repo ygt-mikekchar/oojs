@@ -9,6 +9,7 @@ surprised at how elegantly JavaScript can define an object system with
 no new syntax.  While defining the system I hope to provoke thoughts about
 what it means to be "Object Oriented".
 #+END_QUOTE
+-------------
 
 One day at work, we were discussing languages that we enjoyed working
 with.  Some people expressed surprise that very near the top of my
