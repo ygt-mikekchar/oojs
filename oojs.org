@@ -483,13 +483,15 @@ OOP evolved from several different backgrounds, which is, I think, one
 of the reasons why our view is so muddled now. We have conflated a
 bunch of competing ideas, not all of which are compatible with one
 another.  For the purposes of this post I'm going to fall back on a
-very simple description attributed to Alan Kay, one of the original
-progenitors of OOP:
+[[http://www.purl.org/stefan_ram/pub/doc_kay_oop_en][very simple
+description of OO]] from Alan Kay, one of the original progenitors of
+OOP:
 
 #+BEGIN_QUOTE
 OOP to me means only messaging, local retention and protection and
-hiding of state-process, and extreme LateBinding of all things. --
-Alan Kay
+hiding of state-process, and extreme late-binding of all things. It
+can be done in Smalltalk and in LISP. There are possibly other
+systems in which this is possible, but I'm not aware of them. -- Alan Kay
 #+END_QUOTE
 
 I don't necessarily know exactly what Alan Kay means by this, but I
