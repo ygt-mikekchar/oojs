@@ -26,28 +26,38 @@ way, it doesn't mean that we have to continue doing that for ever.
 
 With that said, I'll dive into the work.  I want to introduce a simple
 object framework using only very basic language features included in JavaScript.
+Of course JavaScript already *has* an object system, but I
+think it suffers from the original requirement that it resemble Java
+in some way.  I would like to step back a bit and consider how we
+might build an object system that operates differently.
+
 Again, the idea here is not to suggest that this is a good way of
 programming, but rather to explore a different way of looking at OO
 and JavaScript.  I think most programmers will be able to follow along
 even if they are not particularly familiar with JavaScript.
 
-** Basic JavaScript Features
+** Basic Language Features
 
-I'm going to use a few basic features of JavaScript in this endeavour.
+We're only going to use a few basic features of JavaScript in this endeavour.
 I'll use ES6 notation, because I find it more convenient, but the vast
 majority of what I'm doing can be done just as easily in earlier
 versions of the language.  I'll point out any potential differences
-along the way.  However, because some people may not be familiar with
-all of the features I'll be using in JavaScript, I'll try to explain
-them first.
+along the way.
+
+There are many languages we could use to implement this object system,
+but JavaScript is surprisingly elegant for doing what we want to do.
+Even if you have not used JavaScript extensively before, we are using
+so few facilities of what makes up modern JavaScript, I think it will
+be fairly easy to understand.  However, there are a few issues that
+are important to explain in detail.
 
 *** References and Mutability
 
 JavaScript is a garbage collected language.  What that means is that
 the programmer does not explicitly allocate memory.  A separate
 facility in the run-time system occasionally looks for data that is no
-longer being used and frees the memory.  Variables in JavaScript are
-references that point to allocated memory.
+longer being used and frees the memory.  All variables in JavaScript are
+references that point to values (usually allocated on the heap).
 
 Early versions of JavaScript had only mutable variables.  That is, you
 can change the value that they point to.  ~var~ declares a mutable
@@ -73,8 +83,8 @@ change.  The value ~5~ does not suddenly become ~6~, but our variable can
 point to ~5~ or ~6~ (or any other value).  In this way, the variable is
 mutable (can be changed) while the value is immutable (can not be
 changed).  You may be forgiven for thinking this is obvious -- where
-would we be if ~5~ suddenly became ~6~?  However, for other kinds of data
-it's not so obvious.
+would we be if ~5~ suddenly became ~6~?  However, some kinds of
+values *can* be changed (which we will see later).
 
 ES6 introduced 2 other kinds of variables: ~let~ and ~const~.  ~let~
 variables are mutable, but block scoped and ~const~ variables are
@@ -83,8 +93,8 @@ you can use the variable anywhere within the block in which it is
 declared, but not outside.  Blocks are generally defined with ~{}~
 characters.  An example might be an ~if~ statement.  With ~const~
 variables, you can not change the reference after they have been
-assigned once.  If the variable is pointing to an immutable value,
-then the variable is truly immutable.
+assigned once.  If you only use ~const~ variables that point to
+immutable values, then you can be sure that everything is immutable.
 
 Most values in JavaScript are immutable.  Surprisingly, even string
 values are immutable in JavaScript (although, unfortunately it doesn't
@@ -100,15 +110,15 @@ throw an error if you try to mutate them).  For example:
 > { a: 'bar' }
 #+END_SRC
 
-Even constructed strings are immutable.  For example ~'a' + 'b'~
-returns an immutable string.  This surprised me slightly when I looked
-into it, but there are some performance reasons why immutable strings
-are beneficial.
+Even constructed strings are immutable.  For example adding two
+strings together returns an immutable string.  This surprised me
+slightly when I looked into it, but there are some performance reasons
+why immutable strings are beneficial.
 
 There are only a few value types that are mutable in Javascript.  Anyone
 who has worked with immutable data structures before know that they
 can be tricky to work with.  For performance reasons, it's often
-helpful to have mutable arrays, and JavaScript provides these.
+helpful to have mutable arrays, and JavaScript's arrays are mutable.
 
 #+BEGIN_SRC js
   var a = [1, 2, 3];
@@ -285,7 +295,8 @@ Before ES6 you would have to write this as:
 
 Again, the second form is easier to understand what it is doing under
 the hood, but the first is dramatically easier to type and to reason
-about, once you understand it.
+about, once you understand it.  For this reason, I will stick to ES6
+style lambdas when I can.
 
 Syntax aside, this is an example of "currying".  Every function that
 can take 2 parameters can be converted into a function that takes 1
@@ -295,7 +306,7 @@ leave that as an exercise for the reader.
 
 The functions we defined earlier, ~inc~ and ~add_two~, are examples of
 "partially applied functions".  "Partially applied" means that only
-some of the parameters have been specified: returning a function that
+some of the parameters have been specified.  The result is a function that
 allows you to specify the remaining parameters.  Just to remind you,
 here's the definition of ~inc~ again:
 
@@ -310,9 +321,9 @@ to, it can sometimes make the intent more clear: ~inc~ is equivalent to
 adding one to something.
 
 Note that we can specify all of the parameters to ~add~ if we want to,
-although the syntax is slightly unfortunate in JavaScript (a result of
-early demands to make it look like Java, even though it operates
-differently under the hood):
+although the syntax is slightly unfortunate in JavaScript (probably a
+result of early demands to make it look like Java, even though it
+operates differently under the hood):
 
 #+BEGIN_SRC js
   const add = x => y =>
@@ -325,9 +336,9 @@ differently under the hood):
 > { a: 4 }
 #+END_SRC
 
-*** A few other things are also Dictionaries
+*** A few other things are also Dictionaries (aka Objects)
 
-There is one last quibble that I have to clear up before we move on.
+There is one last issue that I want to clear up before we move on.
 Functions not only hold the value of a function, they are *also*
 dictionaries (aka objects).  For example, one can do the following:
 
@@ -361,21 +372,64 @@ that appeals to us.
 
 *** Closures are Mutable
 
-TBD
+Earlier I mentioned that as long as the variables closed over in a
+cloure are immutable, they can't change value.  It is important to
+understand, though, that function parameters are mutable in
+JavaScript:
+
+#+BEGIN_SRC js
+  const foo = (x) => {
+    x = x + 1;
+    return x;
+  };
+
+  return({foo_4: foo(4)});
+#+END_SRC
+#+BEGIN_SRC js
+> { foo_4: 5 }
+#+END_SRC
+
+Effectively, this makes closures mutable.  Consider the following:
+
+#+BEGIN_SRC js
+  const init = x => y => {
+    x = x + y;
+    return x;
+  };
+  const advance = init(0);
+
+  return({
+    advance_1: advance(1),
+    advance_2: advance(2),
+    advance_3: advance(3),
+    advance_4: advance(4)
+  });
+#+END_SRC
+#+BEGIN_SRC js
+: { advance_1: 1, advance_2: 3, advance_3: 6, advance_4: 10 }
+#+END_SRC
+
+Every time you call ~advance~ it increments ~x~ the appropriate
+amount.  This value is stored as state in the closure.  While you
+can't change the function after it has been defined, it's operation
+*can* change because the variables that are closed over are mutable.
+
+A function that always returns the same value when given the same
+parameters is called *idempotent*.  Idempotent functions are *much*
+easier to reason about because we don't have consider any previous
+state.  Especially when debugging a problem, you don't always know
+what state caused a problem, so whenever possible we want to write
+idempotent functions.
 
 ** Building a Rudimentary Object System
 
 With just these facilities, we can now build a rudimentary object
-system.  Of course JavaScript already *has* an object system, but I
-think it suffers from the original requirement that it resemble Java
-in some way.  I would like to step back a bit and consider how we
-might build an object system that operates differently.
-
-The astute reader will notice by now that I have not really discussed
-OO at all up until this point.  In fact, everything I've talked about
-is really the basics of *functional* programming.  I hope you can see
-that, if you are careful, JavaScript could make a pretty good functional
-language.  How does that relate to the Object Oriented paradigm?
+system. The astute reader will notice by now that I have not really
+discussed OO at all up until this point.  In fact, everything I've
+talked about is really the basics of *functional* programming.  I hope
+you can see that, if you are careful, JavaScript could make a pretty
+good functional language.  How does that relate to the Object Oriented
+paradigm?
 
 *** What is Object Oriented Programming?
 
