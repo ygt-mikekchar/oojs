@@ -1,11 +1,11 @@
-* Exploring OO with JavaScript
+* Exploring Object Oriented Programming with JavaScript
 
 One day at work, we were discussing languages that we enjoyed working
 with.  Some people expressed surprise that very near the top of my
 preferences I listed JavaScript.  It's a language that many people
-begrudgingly use, but only when they have no other choice.  Similarly,
+use, but often only when they have no other choice.  Similarly,
 I frequently bump into blogs on the internet expressing a distaste
-(verging on disgust, in some cases) for object oriented programming.
+(verging on disgust, in some cases) for object oriented programming (OOP).
 
 If you hang around in the programming industry long enough you may
 notice a common occurrence.  Sometimes someone has a gem of an idea.
@@ -17,11 +17,12 @@ bad until the most widespread versions of the idea no longer closely
 match the original.
 
 It's from that perspective that I find myself reflecting on both
-JavaScript and OO.  The original ideas are compelling, but the popular
-versions of their evolution are fraught with problems.  In this post, I
-don't intend to try to convince the reader that either OO or JavaScript is
-something that they want to or should be using.  My goal is much more
-modest.  I simply want to show a different way of looking at them.
+JavaScript and OOP.  The original ideas are compelling, but the popular
+versions of their evolution are fraught with problems.  When reading
+complaints about either JavaScript or OOP, I often find myself agreeing
+with the author on what they wrote, but not agreeing with their
+conclusions.  Even if people generally use a tool in a problematic
+way, it doesn't mean that we have to continue doing that for ever.
 
 With that said, I'll dive into the work.  I want to introduce a simple
 object framework using only very basic language features included in JavaScript.
@@ -49,8 +50,11 @@ longer being used and frees the memory.  Variables in JavaScript are
 references that point to allocated memory.
 
 Early versions of JavaScript had only mutable variables.  That is, you
-can change the value that they point to.  However, with two
-exceptions, the values themselves are immutable.  For example:
+can change the value that they point to.  ~var~ declares a mutable
+variable with function scope (it can be used anywhere inside the
+enclosing function).  While the variable is mutable, the value that it
+references is often immutable (it can't be modified).  Here is an
+example:
 
 #+BEGIN_SRC js
   var a = 5;
@@ -65,24 +69,26 @@ exceptions, the values themselves are immutable.  For example:
 
 Another way to think about this is that we can point our variable (via
 assignment) to any value we want, but the value itself can not
-change.  The value 5 does not suddenly become 6, but our variable can
-point to 5 or 6 (or any other value).  In this way, the reference is
+change.  The value ~5~ does not suddenly become ~6~, but our variable can
+point to ~5~ or ~6~ (or any other value).  In this way, the variable is
 mutable (can be changed) while the value is immutable (can not be
 changed).  You may be forgiven for thinking this is obvious -- where
-would we be if 5 suddenly became 6?  However, for other kinds of data
+would we be if ~5~ suddenly became ~6~?  However, for other kinds of data
 it's not so obvious.
 
-This kind of variable is function scoped (it exists within the function
-in which it was defined), but ES6 introduced 2 other kinds of variables:
-"let" and "const".  "let" variables are mutable, but block scoped and
-"const" variables are immutable while also being block scoped.  With
-"const" variables, you can not change the reference after they have
-been assigned once.  If the variable is pointing to an immutable
-value, then the variable is truly immutable.
+ES6 introduced 2 other kinds of variables: ~let~ and ~const~.  ~let~
+variables are mutable, but block scoped and ~const~ variables are
+immutable while also being block scoped.  "Block scoped" means that
+you can use the variable anywhere within the block in which it is
+declared, but not outside.  Blocks are generally defined with ~{}~
+characters.  An example might be an ~if~ statement.  With ~const~
+variables, you can not change the reference after they have been
+assigned once.  If the variable is pointing to an immutable value,
+then the variable is truly immutable.
 
-Surprisingly, even string values are immutable in JavaScript (although,
-unfortunately it doesn't throw an error if you try to mutate them).
-For example:
+Most values in JavaScript are immutable.  Surprisingly, even string
+values are immutable in JavaScript (although, unfortunately it doesn't
+throw an error if you try to mutate them).  For example:
 
 #+BEGIN_SRC js
   var a = "bar";
@@ -94,7 +100,15 @@ For example:
 > { a: 'bar' }
 #+END_SRC
 
-As you might imagine, arrays are mutable:
+Even constructed strings are immutable.  For example ~'a' + 'b'~
+returns an immutable string.  This surprised me slightly when I looked
+into it, but there are some performance reasons why immutable strings
+are beneficial.
+
+There are only a few value types that are mutable in Javascript.  Anyone
+who has worked with immutable data structures before know that they
+can be tricky to work with.  For performance reasons, it's often
+helpful to have mutable arrays, and JavaScript provides these.
 
 #+BEGIN_SRC js
   var a = [1, 2, 3];
@@ -108,15 +122,16 @@ As you might imagine, arrays are mutable:
 > { a: [ 1, 2, 4 ], b: [ 1, 2, 4 ] }
 #+END_SRC
 
-The other kind of value that is mutable in JavaScript is the "object".
-An "object" is not as special as you might imagine from its name.  In
-other languages it would be called a "dictionary", "hash", "record" or
-"struct".  The name is quite unfortunate because it conflates the OO
-notion of "object" with something that can be used to construct an
-object.  To avoid that confusion, I'm going to call it a "dictionary"
-in this post, which is what Smalltalk calls it.  After all, JavaScript
-was originally intended to be similar to Smalltalk, so I think it's
-appropriate.  I apologise in advance if you find it confusing.
+The other main type of value that is mutable in JavaScript is the
+"object".  An "object" is not as special as you might imagine from its
+name.  In other languages it would be called a "dictionary", "hash",
+"record" or "struct".  The name is quite unfortunate because it
+conflates the OO notion of "object" with something that can be used to
+construct an object.  To avoid that confusion, I'm going to call it a
+"dictionary" in this post, which is what Smalltalk calls it.  After
+all, JavaScript was originally intended to be similar to Smalltalk, so
+I think it's appropriate.  I apologise in advance if you find it
+confusing.
 
 Here is an example of the mutability of dictionaries:
 
@@ -131,12 +146,12 @@ Here is an example of the mutability of dictionaries:
 > { a: { foo: 2 }, b: { foo: 2 } }
 #+END_SRC
 
-It is important to understand that even though the *variables* "a" and
-"b" are immutable (const), the *value* that they point to is not.  Again, with
-a slight quibble that I will explain shortly, the only values that are
-mutable in JavaScript are arrays and dictionaries.  It's also important to
-realise that *assignment* points a variable to a *new value*.  For
-example:
+It is important to understand that even though the *variables* ~a~ and
+~b~ are immutable (const), the *values* that they point to are not.
+Personally, I find the keywords pretty confusing, but as long are you
+keep in mind that they refer to the *variable* you'll be fine.  It's
+also important to realise that *assignment* points a variable to a
+*new value*.  For example:
 
 #+BEGIN_SRC js
   let a = {foo: 1};
@@ -152,10 +167,10 @@ example:
 *** Functions, Closures and Currying
 
 In JavaScript, functions are "first class citizens".  In other words
-a function is a value just like any other value.  For most purposes,
-function values are also immutable: there is no way to change the
-value of a function (in pretty much the same way it is impossible to
-change the value of "5").
+a function is a value just like any other value.  Once a function has
+been defined, you can't really modify it (just in the same way that
+the value ~5~ can't suddenly become ~6~, one function can't suddenly
+transform into a different function).
 
 Here is an example:
 
@@ -204,9 +219,10 @@ that notation:
 
 Not only can functions be assigned to variables, they can also be
 passed to and returned from functions.  This leads us to another
-feature, which is common in many popular languages today, but which
-was fairly uncommon when JavaScript was first introduced: closures.
-An example is probably the easiest way to describe a closure.
+feature, which is common in many popular languages today: closures.
+While common today, when it was first introduced it was a pretty
+esoteric feature that was absent in most mainstream programming
+languages. An example is probably the easiest way to describe a closure.
 
 #+BEGIN_SRC js
   const add = (x) => {
@@ -221,24 +237,25 @@ An example is probably the easiest way to describe a closure.
 > { inc_5: 6, add_two_to_6: 8, inc_3: 4 }
 #+END_SRC
 
-What is happening here?  The function "add" takes a single parameter,
-"x", and returns a new function that takes a single parameter y.  The
-function it returns adds "x" and "y" together.  The function returned
-by "add" needs to remember "x", even though "x" is no longer in scope.
-We say that the function returned by "add" "closes over x".  That
+What is happening here?  The function ~add~ takes a single parameter,
+~x~, and returns a new function that takes a single parameter y.  The
+function it returns adds ~x~ and ~y~ together.  The function returned
+by ~add~ needs to remember ~x~, even though ~x~ is no longer in scope.
+We say that the function returned by ~add~ "closes over ~x~".  That
 function is known as a "closure".
 
 It is important to understand that a closure remembers the value of
 the variable *when it was constructed*, not when it was called.  So in
-this case, "inc" always uses the value of 1 for x, while "add_two"
-always uses the value of 2 for x.  As long as the value is immutable,
+this case, ~inc~ always uses the value of ~1~ for ~x~, while ~add_two~
+always uses the value of ~2~ for ~x~.  As long as the value is immutable,
 it can not change.  However, you must beware if you close over a
-dictionary (aka object) or array because they are *not* immutable.  This can be
-the source of hard to understand errors!
+dictionary (aka object) or array because they are *not*
+immutable. Because this has serious consequences, we'll explore this
+in more detail shortly.
 
 In functional programming, this kind of construction is very popular.
-Earlier we saw a definition of "add" that took 2 parameters ("x" and
-y").  Just to remind you:
+Earlier we saw a definition of ~add~ that took 2 parameters (~x~ and
+~y~).  Just to remind you:
 
 #+BEGIN_SRC js
   const add = (x, y) => x + y;
@@ -246,8 +263,8 @@ y").  Just to remind you:
 
 Note that ES6 allows you to omit the parentheses in the parameter list
 if there is exactly one parameter.  You can also omit the braces and
-"return" statement in the body if it is composed of exactly one
-expression.  With that we can refactor our "add" returning a closure
+~return~ statement in the body if it is composed of exactly one
+expression.  With that we can refactor our ~add~ returning a closure
 to something that more closely resembles what you would find in a
 functional programming language:
 
@@ -276,23 +293,23 @@ parameter and returns a closure that takes 1 parameter.  You can
 extend that to functions with any number of parameters, but I will
 leave that as an exercise for the reader.
 
-The functions we defined earlier, "inc" and "add_two", are examples of
+The functions we defined earlier, ~inc~ and ~add_two~, are examples of
 "partially applied functions".  "Partially applied" means that only
 some of the parameters have been specified: returning a function that
 allows you to specify the remaining parameters.  Just to remind you,
-here's the definition of "inc" again:
+here's the definition of ~inc~ again:
 
 #+BEGIN_SRC js
   const inc = add(1);
 #+END_SRC
 
-You'll notice that while "inc" is a function, we don't specify the
+You'll notice that while ~inc~ is a function, we don't specify the
 parameter in its definition.  This is called "point free form" in
 functional programming languages.  While it takes some getting used
-to, it can sometimes make the code more clear: "inc" is equivalent to
+to, it can sometimes make the intent more clear: ~inc~ is equivalent to
 adding one to something.
 
-Note that we can specify all of the parameters to "add" if we want to,
+Note that we can specify all of the parameters to ~add~ if we want to,
 although the syntax is slightly unfortunate in JavaScript (a result of
 early demands to make it look like Java, even though it operates
 differently under the hood):
@@ -308,12 +325,11 @@ differently under the hood):
 > { a: 4 }
 #+END_SRC
 
-*** I lied: One more mutable value
+*** A few other things are also Dictionaries
 
-There is one last quibble that I have to clear up before we move on to
-the meat of this post.  Functions not only hold the value of a
-function, they are *also* dictionaries (aka objects).  For example,
-one can do the following:
+There is one last quibble that I have to clear up before we move on.
+Functions not only hold the value of a function, they are *also*
+dictionaries (aka objects).  For example, one can do the following:
 
 #+BEGIN_SRC js
   const add = x => y =>
@@ -325,11 +341,6 @@ one can do the following:
 #+BEGIN_SRC js
 > { add: { [Function: add] foo: 'bar' } }
 #+END_SRC
-
-In my mind this is incredibly unfortunate and it really only exists to
-support some features of the built in object system.  We won't be
-using this facility, so for the purposes of this post you can assume
-that function values are immutable.
 
 Strangely enough, even arrays are dictionaries:
 #+BEGIN_SRC js
@@ -347,6 +358,10 @@ that it doesn't exist!  In our lovely play world, we don't need to
 practice "defence against the bad programmers", so it will be
 relatively easy to restrain ourselves to the subset of the language
 that appeals to us.
+
+*** Closures are Mutable
+
+TBD
 
 ** Building a Rudimentary Object System
 
