@@ -62,22 +62,40 @@ a tool that they should use.  I am simply hoping to view the problem
 from a different point of view.  If it proves interesting, then I will
 be more than satisfied.
 
-** Basic Language Features
+We're only going to use a few basic features of JavaScript in this
+endeavour.  I'll use ES6 notation, because I find it more convenient,
+but the vast majority of what I'm doing can be done just as easily (if
+considerably more verbosely) in earlier versions of the language.
+I'll point out any potential differences along the way. Even if you
+have not used JavaScript extensively before, we are using so few
+facilities of what makes up modern JavaScript, I think it will be
+fairly easy to understand.
 
-We're only going to use a few basic features of JavaScript in this endeavour.
-I'll use ES6 notation, because I find it more convenient, but the vast
-majority of what I'm doing can be done just as easily in earlier
-versions of the language.  I'll point out any potential differences
-along the way.
+** Immutability and Idempotence
 
-There are many languages we could use to implement this object system,
-but JavaScript is surprisingly elegant for doing what we want to do.
-Even if you have not used JavaScript extensively before, we are using
-so few facilities of what makes up modern JavaScript, I think it will
-be fairly easy to understand.  However, there are a few issues that
-are important to explain in detail.
+It may be surprising to start by looking at immutability.  There are a
+couple of reasons why I feel it is necessary to do so.  Many
+criticisms of OOP come from programmers who have experience with pure
+functional languages.  For some reason, they believe that mutability
+is inherent to OOP.  I want to dispell that notion.  It is just as
+easy to write an object system using immutable data structures and
+pure functions as it is to write one with mutable data structures.
 
-*** References and Mutability
+Having just made that comment, I have to admit that the vast majority
+of OO programming languages make it very difficult to write immutable
+code.  The issues that you have to keep in mind are not obvious.  For
+that reason, many (most?) object oriented programmers do not
+understand the cost of mutability in their code.  As we'll see, it's
+not always easy to contain that mutability, which leads to code that
+is more difficult to reason about than necessary.
+
+Finally, JavaScript has made a few language design choices that impact
+how we can write immutable code.  I think it is worth going over these
+as some of them may be surprising unless you understand JavaScript
+very well.  This section will also serve as an introduction to all of
+the JavaScript facilities we will use to build the object system.
+
+*** References and Values
 
 JavaScript is a garbage collected language.  What that means is that
 the programmer does not explicitly allocate memory.  A separate
@@ -370,7 +388,7 @@ operates differently under the hood):
 > { a: 4 }
 #+END_SRC
 
-*** Idempotency
+*** Idempotence
 
 Earlier I mentioned that as long as the variables closed over in a
 closure are immutable, they can't change value.  It is important to
