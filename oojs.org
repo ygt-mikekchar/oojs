@@ -1,4 +1,4 @@
-* Exploring Object Oriented Programming with JavaScript
+* Re-examining Object Oriented Programming with JavaScript
 
 One day at work, we were discussing languages that we enjoyed working
 with.  Some people expressed surprise that very near the top of my
@@ -8,33 +8,59 @@ I frequently bump into blogs on the internet expressing a distaste
 (verging on disgust, in some cases) for object oriented programming (OOP).
 
 If you hang around in the programming industry long enough you may
-notice a common occurrence.  Sometimes someone has a gem of an idea.
+notice a common occurrence.  Sometimes someone has a seed of an idea.
 It is not fully formed yet, but it has a lot of promise.  They work on
 the idea for a while and word spreads.  Eventually it becomes well
 known, with many people experimenting with it.  Evolution of the idea follows
 several paths, each proponent injecting their own ideas, both good and
 bad until the most widespread versions of the idea no longer closely
-match the original.
+match the original.  Often the idea is derided as horrible, using
+evidence gathered from the popular views that no longer match the
+original.
 
-It's from that perspective that I find myself reflecting on both
-JavaScript and OOP.  The original ideas are compelling, but the popular
-versions of their evolution are fraught with problems.  When reading
-complaints about either JavaScript or OOP, I often find myself agreeing
-with the author on what they wrote, but not agreeing with their
-conclusions.  Even if people generally use a tool in a problematic
-way, it doesn't mean that we have to continue doing that for ever.
+In that vein, you may be familiar with definitions of object oriented
+programming (OOP) that involve things like "inheritance",
+"polymorphism", "encapsulation", etc, etc.  However, in my own career
+dominated mostly by object oriented programming, I have found that
+these definitions fall short.  Indeed, all of those things are present
+in object oriented systems, but they aren't the benefits that I
+actually want from OOP.  Ideally, I'm just after better cohesion with
+less unnecessary coupling in my code.  As a part of this, I value
+being able to write generic code when it improves cohesion.
 
-With that said, I'll dive into the work.  I want to introduce a simple
-object framework using only very basic language features included in JavaScript.
-Of course JavaScript already *has* an object system, but I
-think it suffers from the original requirement that it resemble Java
-in some way.  I would like to step back a bit and consider how we
-might build an object system that operates differently.
+OOP evolved from several different backgrounds, which is, I think, one
+of the reasons why our view is so muddled now. We have conflated a
+bunch of competing ideas, not all of which are compatible with one
+another.  For the purposes of this post I'm going to fall back on a
+[[http://www.purl.org/stefan_ram/pub/doc_kay_oop_en][very simple
+description of OO]] from Alan Kay, one of the original progenitors of
+OOP:
 
-Again, the idea here is not to suggest that this is a good way of
-programming, but rather to explore a different way of looking at OO
-and JavaScript.  I think most programmers will be able to follow along
-even if they are not particularly familiar with JavaScript.
+#+BEGIN_QUOTE
+OOP to me means only messaging, local retention and protection and
+hiding of state-process, and extreme late-binding of all things. It
+can be done in Smalltalk and in LISP. There are possibly other
+systems in which this is possible, but I'm not aware of them. -- Alan Kay
+#+END_QUOTE
+
+He wrote that email in 2003 and I wonder if he dismissed JavaScript
+out of hand.  I know at that time, I would have done the same.  Now I
+wonder if we can't build something that comes close to matching his
+view using only very basic JavaScript.
+
+In this post I'll define a rudimentary object system written in
+JavaScript.  Of course JavaScript already *has* a rudimentary object
+system.  However, I think it suffers from the aforementioned confusing
+conglomeration of competing ideas.  I think many people will be
+surprised at how elegantly JavaScript can define an object system with
+no new syntax.
+
+I should point out that I am not suggesting that one actually *use*
+this system.  It is just an exploration of ideas.  Similarly I am not
+attempting to sway the reader into accepting JavaScript or even OOP as
+a tool that they should use.  I am simply hoping to view the problem
+from a different point of view.  If it proves interesting, then I will
+be more than satisfied.
 
 ** Basic Language Features
 
@@ -430,38 +456,8 @@ system. The astute reader will notice by now that I have not really
 discussed OO at all up until this point.  In fact, everything I've
 talked about is really the basics of *functional* programming.  I hope
 you can see that, if you are careful, JavaScript could make a pretty
-good functional language.  How does that relate to the Object Oriented
+good functional language.  How does that relate to the object oriented
 paradigm?
-
-*** What is Object Oriented Programming?
-
-You may be familiar with definitions of Object Oriented Programming
-(OOP) that involve things like "inheritance", "polymorphism",
-"encapsulation", etc, etc.  However, in my own career dominated mostly
-by object oriented programming, I have found that these definitions
-fall short.  Indeed, all of those things are present in object
-oriented systems, but they aren't the benefits that I actually want
-from OOP.  Ideally, I'm just after better cohesion with less
-unnecessary coupling in my code.  As a part of this, I value being
-able to write generic code when it improves cohesion.
-
-OOP evolved from several different backgrounds, which is, I think, one
-of the reasons why our view is so muddled now. We have conflated a
-bunch of competing ideas, not all of which are compatible with one
-another.  For the purposes of this post I'm going to fall back on a
-[[http://www.purl.org/stefan_ram/pub/doc_kay_oop_en][very simple
-description of OO]] from Alan Kay, one of the original progenitors of
-OOP:
-
-#+BEGIN_QUOTE
-OOP to me means only messaging, local retention and protection and
-hiding of state-process, and extreme late-binding of all things. It
-can be done in Smalltalk and in LISP. There are possibly other
-systems in which this is possible, but I'm not aware of them. -- Alan Kay
-#+END_QUOTE
-
-I don't necessarily know exactly what Alan Kay means by this, but I
-think it is a useful place to start exploring.
 
 *** Defining a Rectangle
 
