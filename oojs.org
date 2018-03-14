@@ -381,7 +381,7 @@ that appeals to us.
 *** Idempotency
 
 Earlier I mentioned that as long as the variables closed over in a
-cloure are immutable, they can't change value.  It is important to
+closure are immutable, they can't change value.  It is important to
 understand, though, that function parameters are mutable in
 JavaScript:
 
@@ -407,14 +407,14 @@ Effectively, this makes closures mutable.  Consider the following:
   const advance = init(0);
 
   return({
-    advance_1: advance(1),
-    advance_2: advance(2),
-    advance_3: advance(3),
-    advance_4: advance(4)
+    a: advance(1),
+    b: advance(1),
+    c: advance(1),
+    d: advance(1)
   });
 #+END_SRC
 #+BEGIN_SRC js
-: { advance_1: 1, advance_2: 3, advance_3: 6, advance_4: 10 }
+: { a: 1, b: 2, c: 3, d: 4 }
 #+END_SRC
 
 Every time you call ~advance~ it increments ~x~ the appropriate
@@ -474,7 +474,10 @@ You may be familiar with definitions of Object Oriented Programming
 "encapsulation", etc, etc.  However, in my own career dominated mostly
 by object oriented programming, I have found that these definitions
 fall short.  Indeed, all of those things are present in object
-oriented systems, but I often feel that they fall short of the point.
+oriented systems, but they aren't the benefits that I actually want
+from OOP.  Ideally, I'm just after better cohesion with less
+unnecessary coupling in my code.  As a part of this, I value being
+able to write generic code when it improves cohesion.
 
 OOP evolved from several different backgrounds, which is, I think, one
 of the reasons why our view is so muddled now. We have conflated a
@@ -496,8 +499,7 @@ the worst problems of explanations of OOP is the use of toy problems
 where real world issues rarely rear their ugly heads.  However, as I
 stated in the introduction, my goal here is not to explain, or sell
 you on OOP.  I merely want to look at the issue from a different angle
-and hopefully start a thought process for carrying it on further.  If
-it never goes any further than that, I will still be happy.
+and hopefully start a thought process for carrying it on further.
 
 With that disclaimer, let's start in a kind of unorthodoxed way.  I
 think most people would start their object oriented modelling by
