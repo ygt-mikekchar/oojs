@@ -720,25 +720,14 @@ Does it work?
 
 Of course just being able to do something doesn't necessarily mean
 that you *should* do that thing.  Should we make `Point` mutable?
-Let's look at some of the potential consequences.
+Later we will look at some of the potential consequences.
 
-*** Returning to Rectangle
+*** Four Sided Shapes
 
-Now that we've defined a Point class.  We can return to our problem of
-translating a rectangle.  Let's write a Rectangle class in the same
-fashion as the Point class.
+Let's go back to the rectangle and see what it looks like if we use an
+immutable `Point` class.
 
-#+BEGIN_SRC js
-  const Point = (x, y) => {
-    return {
-      show: () => {
-        return {x: x, y: y};
-      },
-      translate: (dx, dy) =>
-        Point(x + dx, y + dy)
-    };
-  };
-
+#+BEGIN_SRC js :tangle rect.js
   const Rect = (pos, length, height) => {
     return {
       show: () => {
@@ -751,6 +740,12 @@ fashion as the Point class.
     };
   };
 
+  module.exports = Rect;
+#+END_SRC
+
+#+BEGIN_SRC js
+  const Point = require("point.js");
+  const Rect = require("rect.js");
   const rect = Rect(Point(1, 2), 4, 5);
 
   return({
@@ -759,8 +754,61 @@ fashion as the Point class.
     translated: rect.translate(10, 20).show(),
   });
 #+END_SRC
+
 #+BEGIN_SRC js
 > { rect: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
     area: 20,
     translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 } }
 #+END_SRC
+
+So far so good.  Now, with apologies to Mr. Liskov, I'm going to
+suggest that we make a `Square`.  A square is just a rectangle with
+the height the same as the width.  It's pretty easy to do, but we're
+going to need a small utility function.
+
+#+BEGIN_SRC js
+  const Point = require("point.js");
+  const Rect = require("rect.js");
+
+  const extend = (x, y) => {
+    const obj = Object.assign({}, x);
+    return Object.assign(obj, y);
+  };
+
+  const Square = (pos, length) => {
+    const rect = Rect(pos, length, length);
+    return extend(rect, {
+      translate: (dx, dy) =>
+        Square(pos.translate(dx, dy), length)
+    });
+  };
+
+  const square = Square(Point(1, 2), 4);
+
+  return({
+    square: square.show(),
+    area: square.area(),
+    translated: square.translate(10, 20).show(),
+  });
+#+END_SRC
+
+#+BEGIN_SRC js
+: { square: { pos: { x: 1, y: 2 }, length: 4, height: 4 },
+:   area: 16,
+:   translated: { pos: { x: 11, y: 22 }, length: 4, height: 4 } }
+#+END_SRC
+
+With this implementation, we're not really in trouble with the Liskov
+Substitution Principle, which requires that users of our `Square` not
+care if it is a `Square` or a `Rect`.  Indeed, our `Square` is
+literally a `Rect`. The little helper function, `extend`, does a
+shallow copy of the `Rect` that we built and then overrides any
+dictionary entries with new ones from `Square`.
+
+It's important to understand that the closures from `Rect` are
+*different* that the closures from `Square`.  The closures in `Rect`
+will use the parameters from the call to `Rect`, while the closures in
+`Square` will use the parameters from the call to `Square`.  Since we
+are using immutable values, this is not a problem, because the values
+will all be equal.  However, this is going to cause us problems if
+we mutate any of those parameters.
