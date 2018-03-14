@@ -1,5 +1,15 @@
 * Re-examining Object Oriented Programming with JavaScript
 
+#+BEGIN_QUOTE
+In this post I'll define a rudimentary object system written in
+JavaScript.  Of course JavaScript already *has* a rudimentary object
+system.  However, I think it suffers from a confusing
+conglomeration of competing ideas.  I think many people will be
+surprised at how elegantly JavaScript can define an object system with
+no new syntax.  While defining the system I hope to provoke thoughts about
+what it means to be "Object Oriented".
+#+END_QUOTE
+
 One day at work, we were discussing languages that we enjoyed working
 with.  Some people expressed surprise that very near the top of my
 preferences I listed JavaScript.  It's a language that many people
