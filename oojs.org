@@ -116,7 +116,7 @@ slightly when I looked into it, but there are some performance reasons
 why immutable strings are beneficial.
 
 There are only a few value types that are mutable in Javascript.  Anyone
-who has worked with immutable data structures before know that they
+who has worked with immutable data structures before knows that they
 can be tricky to work with.  For performance reasons, it's often
 helpful to have mutable arrays, and JavaScript's arrays are mutable.
 
@@ -271,11 +271,19 @@ Earlier we saw a definition of ~add~ that took 2 parameters (~x~ and
   const add = (x, y) => x + y;
 #+END_SRC
 
-Note that ES6 allows you to omit the parentheses in the parameter list
+We also had a version that returned a closure for dealing with the
+second paramer, ~y~:
+#+BEGIN_SRC js
+  const add = (x) => {
+    return (y) => x + y;
+  };
+#+END_SRC
+
+ES6 allows you to omit the parentheses in the parameter list
 if there is exactly one parameter.  You can also omit the braces and
 ~return~ statement in the body if it is composed of exactly one
-expression.  With that we can refactor our ~add~ returning a closure
-to something that more closely resembles what you would find in a
+expression.  With that we can refactor the second version
+into something that more closely resembles what you would find in a
 functional programming language:
 
 #+BEGIN_SRC js
@@ -293,10 +301,10 @@ Before ES6 you would have to write this as:
   };
 #+END_SRC
 
-Again, the second form is easier to understand what it is doing under
+The older form is easier to understand what it is doing under
 the hood, but the first is dramatically easier to type and to reason
-about, once you understand it.  For this reason, I will stick to ES6
-style lambdas when I can.
+about, once you understand it.  For this reason, I will stick to the
+newer, compressed ES6 style as much as possible.
 
 Syntax aside, this is an example of "currying".  Every function that
 can take 2 parameters can be converted into a function that takes 1
@@ -370,7 +378,7 @@ practice "defence against the bad programmers", so it will be
 relatively easy to restrain ourselves to the subset of the language
 that appeals to us.
 
-*** Closures are Mutable
+*** Idempotency
 
 Earlier I mentioned that as long as the variables closed over in a
 cloure are immutable, they can't change value.  It is important to
@@ -411,7 +419,7 @@ Effectively, this makes closures mutable.  Consider the following:
 
 Every time you call ~advance~ it increments ~x~ the appropriate
 amount.  This value is stored as state in the closure.  While you
-can't change the function after it has been defined, it's operation
+can't change the function after it has been defined, its operation
 *can* change because the variables that are closed over are mutable.
 
 A function that always returns the same value when given the same
@@ -420,6 +428,34 @@ easier to reason about because we don't have consider any previous
 state.  Especially when debugging a problem, you don't always know
 what state caused a problem, so whenever possible we want to write
 idempotent functions.
+
+We have to be especially careful when we close over mutable values.
+Even if you don't reasign the closed over variable, the closure can be
+mutated simply by mutating the value.  Here is an example:
+
+#+BEGIN_SRC js
+  const init = x => y =>
+    x.count + y;
+  const dict = {count: 0};
+  const add_to_count = init(dict);
+
+  const a = add_to_count(1);
+  const b = add_to_count(1);
+  dict.count = 5;
+  const c = add_to_count(1);
+
+  return({a: a, b:b, c:c});
+#+END_SRC
+#+BEGIN_SRC js
+: { a: 1, b: 1, c: 6 }
+#+END_SRC
+
+Even though we never reassigned the variable ~x~, the closure is not
+idempotent simply because ~x~ was mutable.  This is an important
+lession: mutability is a bit like a disease.  One piece of mutable
+data can spread the mutability to other data structures if you do not
+take care to isolate it.  This is not a problem with OOP, it is just
+the nature of the beast.
 
 ** Building a Rudimentary Object System
 
