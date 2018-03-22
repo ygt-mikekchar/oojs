@@ -126,8 +126,12 @@ example:
   var b = a;
   a += 5;
 
-  return({a: a, b: b});
+  return {a, b};
 #+END_SRC
+
+#+RESULTS:
+: { a: 10, b: 5 }
+
 #+BEGIN_SRC js
 > { a: 10, b: 5 }
 #+END_SRC
@@ -159,8 +163,12 @@ throw an error if you try to mutate them).  For example:
   var a = "bar";
   a[2] = 'z';
 
-  return({a: a});
+  return {a};
 #+END_SRC
+
+#+RESULTS:
+: { a: 'bar' }
+
 #+BEGIN_SRC js
 > { a: 'bar' }
 #+END_SRC
@@ -181,8 +189,12 @@ helpful to have mutable arrays, and JavaScript's arrays are mutable.
 
   a[2] = 4;
 
-  return({a: a, b: b});
+  return {a, b};
 #+END_SRC
+
+#+RESULTS:
+: { a: [ 1, 2, 4 ], b: [ 1, 2, 4 ] }
+
 #+BEGIN_SRC js
 > { a: [ 1, 2, 4 ], b: [ 1, 2, 4 ] }
 #+END_SRC
@@ -205,8 +217,12 @@ Here is an example of the mutability of dictionaries:
   const b = a;
   a.foo = 2;
 
-  return({a: a, b: b});
+  return {a, b};
 #+END_SRC
+
+#+RESULTS:
+: { a: { foo: 2 }, b: { foo: 2 } }
+
 #+BEGIN_SRC js
 > { a: { foo: 2 }, b: { foo: 2 } }
 #+END_SRC
@@ -223,8 +239,12 @@ also important to realise that *assignment* points a variable to a
   let b = a;
   a = {foo: 2};
 
-  return({a: a, b: b});
+  return {a, b};
 #+END_SRC
+
+#+RESULTS:
+: { a: { foo: 2 }, b: { foo: 1 } }
+
 #+BEGIN_SRC js
 > { a: { foo: 2 }, b: { foo: 1 } }
 #+END_SRC
@@ -247,8 +267,16 @@ Here is an example:
   let result_a2 = a(1, 2);
   let result_b = b(1, 2);
 
-  return({a: a, b: b, result_a1: result_a1, result_a2: result_a2, result_b: result_b });
+  return {a, b, result_a1, result_a2, result_b};
 #+END_SRC
+
+#+RESULTS:
+: { a: [Function: subtract],
+:   b: [Function: add],
+:   result_a1: 3,
+:   result_a2: -1,
+:   result_b: 3 }
+
 #+BEGIN_SRC js
 > { a: [Function: subtract],
     b: [Function: add],
@@ -272,8 +300,16 @@ that notation:
   let result_a2 = a(1, 2);
   let result_b = b(1, 2);
 
-  return({a: a, b: b, result_a1: result_a1, result_a2: result_a2, result_b: result_b});
+  return {a, b, result_a1, result_a2, result_b};
 #+END_SRC
+
+#+RESULTS:
+: { a: [Function: a],
+:   b: [Function: a],
+:   result_a1: 3,
+:   result_a2: -1,
+:   result_b: 3 }
+
 #+BEGIN_SRC js
 > { a: [Function: a],
     b: [Function: a],
@@ -281,6 +317,10 @@ that notation:
     result_a2: -1,
     result_b: 3 }
 #+END_SRC
+
+Note: The "double arrow" notation is not strictly equivalent to
+~function~, since it handles ~this~ differently.  In this post, I
+won't be using ~this~ so I will treat them as the same.
 
 Not only can functions be assigned to variables, they can also be
 passed to and returned from functions.  This leads us to another
@@ -296,10 +336,14 @@ languages. An example is probably the easiest way to describe a closure.
   const inc = add(1);
   const add_two = add(2);
 
-  return({inc_5: inc(5), add_two_to_6: add_two(6), inc_3: inc(3)});
+  return {inc_5: inc(5), add_two_6: add_two(6), inc_3: inc(3)};
 #+END_SRC
+
+#+RESULTS:
+: { inc_5: 6, add_two_6: 8, inc_3: 4 }
+
 #+BEGIN_SRC js
-> { inc_5: 6, add_two_to_6: 8, inc_3: 4 }
+> { inc_5: 6, add_two_6: 8, inc_3: 4 }
 #+END_SRC
 
 What is happening here?  The function ~add~ takes a single parameter,
@@ -393,8 +437,12 @@ operates differently under the hood):
     x + y;
   const a = add(1)(3);
 
-  return({a: a});
+  return {a};
 #+END_SRC
+
+#+RESULTS:
+: { a: 4 }
+
 #+BEGIN_SRC js
 > { a: 4 }
 #+END_SRC
@@ -412,8 +460,12 @@ JavaScript:
     return x;
   };
 
-  return({foo_4: foo(4)});
+  return {foo_4: foo(4)};
 #+END_SRC
+
+#+RESULTS:
+: { foo_4: 5 }
+
 #+BEGIN_SRC js
 > { foo_4: 5 }
 #+END_SRC
@@ -427,15 +479,19 @@ Effectively, this makes closures mutable.  Consider the following:
   };
   const advance = init(0);
 
-  return({
+  return {
     a: advance(1),
     b: advance(1),
     c: advance(1),
     d: advance(1)
-  });
+  };
 #+END_SRC
-#+BEGIN_SRC js
+
+#+RESULTS:
 : { a: 1, b: 2, c: 3, d: 4 }
+
+#+BEGIN_SRC js
+> { a: 1, b: 2, c: 3, d: 4 }
 #+END_SRC
 
 Every time you call ~advance~ it increments ~x~ the appropriate
@@ -465,10 +521,14 @@ mutated simply by mutating the value.  Here is an example:
   dict.count = 5;
   const c = add_to_count(1);
 
-  return({a: a, b:b, c:c});
+  return {a, b, c};
 #+END_SRC
-#+BEGIN_SRC js
+
+#+RESULTS:
 : { a: 1, b: 1, c: 6 }
+
+#+BEGIN_SRC js
+> { a: 1, b: 1, c: 6 }
 #+END_SRC
 
 Even though we never reassigned the variable ~x~, the closure is not
@@ -509,8 +569,12 @@ with a function.
   const area = (length, width) =>
     length * width;
 
-  return({area_5_2: area(5, 2)});
+  return {area_5_2: area(5, 2)};
 #+END_SRC
+
+#+RESULTS:
+: { area_5_2: 10 }
+
 #+BEGIN_SRC js
 > { area_5_2: 10 }
 #+END_SRC
@@ -524,8 +588,12 @@ function that explores other properties of rectangles.
     return { x: x + dx, y: y + dy };
   };
 
-  return({translate_1_2_4_5: translate(1, 2, 4, 5)});
+  return {translate_1_2_4_5: translate(1, 2, 4, 5)};
 #+END_SRC
+
+#+RESULTS:
+: { translate_1_2_4_5: { x: 5, y: 7 } }
+
 #+BEGIN_SRC js
 > { translate_1_2_4_5: { x: 5, y: 7 } }
 #+END_SRC
@@ -564,8 +632,11 @@ already seen a way to do that: closures.  Consider the following:
 
   const point = Point(1, 2);
 
-  return({translate_4_5: point.translate(4, 5)});
+  return {translate_4_5: point.translate(4, 5)};
 #+END_SRC
+
+#+RESULTS:
+: { translate_4_5: { translate: [Function: translate] } }
 
 #+BEGIN_SRC js
 > { translate_4_5: { translate: [Function: translate] } }
@@ -608,11 +679,14 @@ to export and then reimport the "class" we've made.
   const point = Point(1, 2);
   const translated = point.translate(4, 5);
 
-  return({
+  return {
     point: point.show(),
     translated: translated.show()
-  });
+  };
 #+END_SRC
+
+#+RESULTS:
+: { point: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
 
 #+BEGIN_SRC js
 > { point: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
@@ -629,8 +703,11 @@ We can't change it.  For example:
   const point = Point(1, 2);
   point.show().x = 42;
 
-  return({point: point.show()});
+  return {point: point.show()};
 #+END_SRC
+
+#+RESULTS:
+: { point: { x: 1, y: 2 } }
 
 #+BEGIN_SRC js
 > { point: { x: 1, y: 2 } }
@@ -712,10 +789,16 @@ Does it work?
   console.log(point.show());
 #+END_SRC
 
-#+BEGIN_SRC js
+#+RESULTS:
 : { x: 1, y: 2 }
 : { x: 23, y: 42 }
 : { x: 33, y: 62 }
+: undefined
+
+#+BEGIN_SRC js
+> { x: 1, y: 2 }
+  { x: 23, y: 42 }
+  { x: 33, y: 62 }
 #+END_SRC
 
 Of course just being able to do something doesn't necessarily mean
@@ -748,12 +831,17 @@ immutable `Point` class.
   const Rect = require("rect.js");
   const rect = Rect(Point(1, 2), 4, 5);
 
-  return({
+  return {
     rect: rect.show(),
     area: rect.area(),
     translated: rect.translate(10, 20).show(),
-  });
+  };
 #+END_SRC
+
+#+RESULTS:
+: { rect: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
+:   area: 20,
+:   translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 } }
 
 #+BEGIN_SRC js
 > { rect: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
@@ -761,42 +849,104 @@ immutable `Point` class.
     translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 } }
 #+END_SRC
 
+**** TODO Add upper_right, etc to ~Rect~
+     Show that we don't need to access ~x~ and ~y~ in ~Rect~
+
+Let's explore what a mutable ~Rect~ would look like:
+
+#+BEGIN_SRC js :tangle mutable_rect.js
+  const Rect = (pos, length, height) => {
+    return {
+      show: () => {
+        return {pos: pos.show(), length: length, height: height};
+      },
+      area: () =>
+        length * height,
+      translate: (dx, dy) =>
+        pos.translate(dx, dy)
+    };
+  };
+
+  module.exports = Rect;
+#+END_SRC
+
+#+BEGIN_SRC js
+  const Point = require("mutable_point.js");
+  const Rect = require("mutable_rect.js");
+  const rect = Rect(Point(1, 2), 4, 5);
+
+  console.log(rect.show());
+  rect.translate(10, 20);
+  console.log(rect.show());
+#+END_SRC
+
+#+RESULTS:
+: { pos: { x: 1, y: 2 }, length: 4, height: 5 }
+: { pos: { x: 11, y: 22 }, length: 4, height: 5 }
+: undefined
+
+#+BEGIN_SRC js
+> { pos: { x: 1, y: 2 }, length: 4, height: 5 }
+  { pos: { x: 11, y: 22 }, length: 4, height: 5 }
+#+END_SRC
+
 So far so good.  Now, with apologies to Mr. Liskov, I'm going to
 suggest that we make a `Square`.  A square is just a rectangle with
-the height the same as the width.  It's pretty easy to do, but we're
-going to need a small utility function.
+the height the same as the width.
 
 #+BEGIN_SRC js
   const Point = require("point.js");
   const Rect = require("rect.js");
 
-  const extend = (x, y) => {
-    const obj = Object.assign({}, x);
-    return Object.assign(obj, y);
-  };
-
   const Square = (pos, length) => {
     const rect = Rect(pos, length, length);
-    return extend(rect, {
+    return { ...rect,
       translate: (dx, dy) =>
         Square(pos.translate(dx, dy), length)
-    });
+    };
   };
 
   const square = Square(Point(1, 2), 4);
 
-  return({
+  return {
     square: square.show(),
     area: square.area(),
     translated: square.translate(10, 20).show(),
-  });
+  };
 #+END_SRC
 
-#+BEGIN_SRC js
+#+RESULTS:
 : { square: { pos: { x: 1, y: 2 }, length: 4, height: 4 },
 :   area: 16,
 :   translated: { pos: { x: 11, y: 22 }, length: 4, height: 4 } }
+
+#+BEGIN_SRC js
+> { square: { pos: { x: 1, y: 2 }, length: 4, height: 4 },
+    area: 16,
+    translated: { pos: { x: 11, y: 22 }, length: 4, height: 4 } }
 #+END_SRC
+
+We're doing something a little bit tricky with the ES6 spread operator
+here.  Essentially, what it does is create a new dictionary, merging
+our new functions with the functions of the parent class.  The nice
+thing about this approach is that it does not mutate the parent:
+
+#+BEGIN_SRC js
+  const parent = { foo: () => "bar" };
+  const child = { ...parent, foo: () => "baz" };
+
+  return { parent_foo: parent.foo(), child_foo: child.foo() };
+#+END_SRC
+
+#+RESULTS:
+: { parent_foo: 'bar', child_foo: 'baz' }
+
+#+BEGIN_SRC js
+> { parent_foo: 'bar', child_foo: 'baz' }
+#+END_SRC
+
+In earlier version of JavaScript, you would have to write a function
+to do the same thing, so this is really a massive win for ES6.
 
 With this implementation, we're not really in trouble with the Liskov
 Substitution Principle, which requires that users of our `Square` not
@@ -812,3 +962,11 @@ will use the parameters from the call to `Rect`, while the closures in
 are using immutable values, this is not a problem, because the values
 will all be equal.  However, this is going to cause us problems if
 we mutate any of those parameters.
+
+** Thanks
+
+Thanks to everyone for reading early versions of this post and
+providing feedback.
+
+Special thanks to Michael Cavanagh for suggesting the use of the
+spread operator for inheritance (among other things).
