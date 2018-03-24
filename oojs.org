@@ -970,3 +970,14 @@ providing feedback.
 
 Special thanks to Michael Cavanagh for suggesting the use of the
 spread operator for inheritance (among other things).
+
+Portions of this work were paid for by
+[Palatinate Group](https://www.palatinategroup.com/).  I very much
+appreciate their support.  As of this writing (March 24, 2018), they
+are hiring for several positions, so feel free to contact them if you
+are looking for work.
+
+Although I was financially supported by Palatinate Group in this
+effort, the views and opinions expressed in this repository are those
+of the author and do not necessarily relect the policy of Palatinate
+Group or any affiliated entity.
