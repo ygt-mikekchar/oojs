@@ -70,7 +70,7 @@ I should point out that I am not suggesting that one actually *use*
 this system.  It is just an exploration of ideas.  Similarly I am not
 attempting to sway the reader into accepting JavaScript or even OOP as
 a tool that they should use.  I am simply hoping to view the problem
-from a different point of view.  If it proves interesting, then I will
+from a different perspective.  If it proves interesting, then I will
 be more than satisfied.
 
 We're only going to use a few basic features of JavaScript in this
@@ -146,7 +146,7 @@ would we be if ~5~ suddenly became ~6~?  However, some kinds of
 values *can* be changed (which we will see later).
 
 ES6 introduced 2 other kinds of variables: ~let~ and ~const~.  ~let~
-variables are mutable, but block scoped and ~const~ variables are
+variables are mutable, but block scoped. ~const~ variables are
 immutable while also being block scoped.  "Block scoped" means that
 you can use the variable anywhere within the block in which it is
 declared, but not outside.  Blocks are generally defined with ~{}~
@@ -253,9 +253,9 @@ also important to realise that *assignment* points a variable to a
 
 In JavaScript, functions are "first class citizens".  In other words
 a function is a value just like any other value.  Once a function has
-been defined, you can't really modify it (just in the same way that
+been defined, you can't really modify it.  Just in the same way that
 the value ~5~ can't suddenly become ~6~, one function can't suddenly
-transform into a different function).
+transform into a different function.
 
 Here is an example:
 
@@ -400,7 +400,7 @@ Before ES6 you would have to write this as:
   };
 #+END_SRC
 
-The older form is easier to understand what it is doing under
+The older form is easier to understand what is happening under
 the hood, but the first is dramatically easier to type and to reason
 about, once you understand it.  For this reason, I will stick to the
 newer, compressed ES6 style as much as possible.
