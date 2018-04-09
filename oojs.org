@@ -26,7 +26,7 @@ known, with many people experimenting with it.  Evolution of the idea follows
 several paths, each proponent injecting their own ideas, both good and
 bad until the most widespread versions of the idea no longer closely
 match the original.  Often the idea is derided as horrible, using
-evidence gathered from the popular views that no longer match the
+evidence gathered from popular views that no longer match the
 original.
 
 In that vein, you may be familiar with definitions of object oriented
@@ -584,9 +584,8 @@ about rectangles: they have a length and a width.  Let's write another
 function that explores other properties of rectangles.
 
 #+BEGIN_SRC js
-  const translate = (x, y, dx, dy) => {
-    return { x: x + dx, y: y + dy };
-  };
+  const translate = (x, y, dx, dy) =>
+    ({ x: x + dx, y: y + dy });
 
   return {translate_1_2_4_5: translate(1, 2, 4, 5)};
 #+END_SRC
@@ -623,12 +622,12 @@ from the phrase "local retention ... of state-process".  We have
 already seen a way to do that: closures.  Consider the following:
 
 #+BEGIN_SRC js
-  const Point = (x, y) => {
-    return {
+  const Point = (x, y) => (
+    {
       translate: (dx, dy) =>
         Point(x + dx, y + dy)
-    };
-  };
+    }
+  );
 
   const point = Point(1, 2);
 
@@ -656,40 +655,38 @@ when we dump the object, we just see that we have a dictionary
 containing a function.  Let's amend this slightly.
 
 I'll want to reuse this definition in the future, so I'm going to
-store it to a file called `point.js`.  I'll use Node's module system
+store it to a file called `point1.js`.  I'll use Node's module system
 to export and then reimport the "class" we've made.
 
-#+BEGIN_SRC js :tangle point.js
-  const Point = (x, y) => {
-    return {
-      show: () => {
-        return {x: x, y: y};
-      },
+#+BEGIN_SRC js :tangle point1.js
+  const Point = (x, y) => (
+    {
+      show: () =>
+        ({x, y}),
       translate: (dx, dy) =>
         Point(x + dx, y + dy)
-    };
-  };
+    }
+  );
 
   module.exports = Point;
 #+END_SRC
 
 #+BEGIN_SRC js
-  const Point = require("point.js");
+  const Point = require("point1.js");
 
   const point = Point(1, 2);
-  const translated = point.translate(4, 5);
 
-  return {
-    point: point.show(),
-    translated: translated.show()
-  };
+  const orig = point.show();
+  const translated = point.translate(4, 5).show();
+
+  return {orig, translated};
 #+END_SRC
 
 #+RESULTS:
-: { point: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
+: { orig: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
 
 #+BEGIN_SRC js
-> { point: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
+> { orig: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
 #+END_SRC
 
 Now we've add an accessor that let's us inspect the private
@@ -698,7 +695,7 @@ least from the perspective of the attributes) is *still* immutable.
 We can't change it.  For example:
 
 #+BEGIN_SRC js
-  const Point = require("point.js");
+  const Point = require("point1.js");
 
   const point = Point(1, 2);
   point.show().x = 42;
@@ -739,7 +736,7 @@ polymorphism extremely simply. The question we have to consider is
 whether or not these closures resemble the "messages" in Alan Kay's
 vision.
 
-*** To Mutate or Not To Mutate
+*** How to Make a Mutable Object
 
 What if we wanted a mutable Point object?  Remember that parameters
 passed to a function are mutable.  This means that we can mutate
@@ -749,9 +746,8 @@ as `mutable_point.js`.
 #+BEGIN_SRC js :tangle mutable_point.js
   const Point = (x, y) => {
     const self = {
-      show: () => {
-        return {x: x, y: y};
-      },
+      show: () =>
+        ({x, y}),
       setX: (new_x) =>
         x = new_x,
       setY: (new_y) =>
@@ -779,38 +775,42 @@ Does it work?
   const Point = require("mutable_point.js");
 
   const point = Point(1, 2);
-  console.log(point.show());
+  const orig = point.show();
 
   point.setX(23);
   point.setY(42);
-  console.log(point.show());
+  const modified = point.show();
 
   point.translate(10, 20);
-  console.log(point.show());
+  const translated = point.show();
+
+  return {orig, modified, translated};
 #+END_SRC
 
 #+RESULTS:
-: { x: 1, y: 2 }
-: { x: 23, y: 42 }
-: { x: 33, y: 62 }
-: undefined
+: { orig: { x: 1, y: 2 },
+:   modified: { x: 23, y: 42 },
+:   translated: { x: 33, y: 62 } }
 
 #+BEGIN_SRC js
-> { x: 1, y: 2 }
-  { x: 23, y: 42 }
-  { x: 33, y: 62 }
+> { orig:       { x:  1, y:  2 },
+    modified:   { x: 23, y: 42 },
+    translated: { x: 33, y: 62 } }
 #+END_SRC
 
 Of course just being able to do something doesn't necessarily mean
 that you *should* do that thing.  Should we make `Point` mutable?
-Later we will look at some of the potential consequences.
+Generally speaking, you should not make something mutable unless you
+really have to. Immutable functions make reasoning about the code much
+easier.  However, in the next section you will see some examples of
+why we tend to get tempted into using mutable functions.
 
 *** Four Sided Shapes
 
 Let's go back to the rectangle and see what it looks like if we use an
 immutable `Point` class.
 
-#+BEGIN_SRC js :tangle rect.js
+#+BEGIN_SRC js :tangle rect1.js
   const Rect = (pos, length, height) => {
     return {
       show: () => {
@@ -827,30 +827,29 @@ immutable `Point` class.
 #+END_SRC
 
 #+BEGIN_SRC js
-  const Point = require("point.js");
-  const Rect = require("rect.js");
-  const rect = Rect(Point(1, 2), 4, 5);
+  const Point = require("point1.js");
+  const Rect = require("rect1.js");
 
-  return {
-    rect: rect.show(),
-    area: rect.area(),
-    translated: rect.translate(10, 20).show(),
-  };
+  const point = Point(1, 2);
+  const rect = Rect(point, 4, 5);
+
+  const orig = rect.show();
+  const translated = rect.translate(10,20).show();
+  const area = rect.area();
+
+  return {orig, translated, area};
 #+END_SRC
 
 #+RESULTS:
-: { rect: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
-:   area: 20,
-:   translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 } }
+: { orig: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
+:   translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 },
+:   area: 20 }
 
 #+BEGIN_SRC js
-> { rect: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
-    area: 20,
-    translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 } }
+> { orig:       { pos: { x:  1, y:  2 }, length: 4, height: 5 },
+    translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 },
+    area: 20 }
 #+END_SRC
-
-**** TODO Add upper_right, etc to ~Rect~
-     Show that we don't need to access ~x~ and ~y~ in ~Rect~
 
 Let's explore what a mutable ~Rect~ would look like:
 
@@ -873,57 +872,131 @@ Let's explore what a mutable ~Rect~ would look like:
 #+BEGIN_SRC js
   const Point = require("mutable_point.js");
   const Rect = require("mutable_rect.js");
+
+  const point = Point(1, 2);
   const rect = Rect(Point(1, 2), 4, 5);
 
-  console.log(rect.show());
+  const orig = rect.show();
   rect.translate(10, 20);
-  console.log(rect.show());
+  const translated = rect.show();
+  const area = rect.area();
+
+  return {orig, translated, area};
 #+END_SRC
 
 #+RESULTS:
-: { pos: { x: 1, y: 2 }, length: 4, height: 5 }
-: { pos: { x: 11, y: 22 }, length: 4, height: 5 }
-: undefined
+: { orig: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
+:   translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 },
+:   area: 20 }
 
 #+BEGIN_SRC js
-> { pos: { x: 1, y: 2 }, length: 4, height: 5 }
-  { pos: { x: 11, y: 22 }, length: 4, height: 5 }
+> { orig:       { pos: { x:  1, y:  2 }, length: 4, height: 5 },
+    translated: { pos: { x: 11, y: 22 }, length: 4, height: 5 },
+    area: 20 }
 #+END_SRC
 
-So far so good.  Now, with apologies to Mr. Liskov, I'm going to
-suggest that we make a `Square`.  A square is just a rectangle with
-the height the same as the width.
+It seems to work almost identically, so you might be forgiven for
+wondering what the big deal is.  Why do I maintain that immutability
+leads to easier to reason code.  Consider this scenario:
 
 #+BEGIN_SRC js
-  const Point = require("point.js");
-  const Rect = require("rect.js");
+  const Point = require("mutable_point.js");
+  const Rect = require("mutable_rect.js");
+
+  const point = Point(1, 2);
+  const rect1 = Rect(point, 4, 5);
+  const rect2 = Rect(point, 10, 20);
+
+  const orig1 = rect1.show();
+  const orig2 = rect2.show();
+  rect1.translate(10, 20);
+  const final1 = rect1.show();
+  const final2 = rect2.show();
+
+  return {orig1, orig2, final1, final2};
+#+END_SRC
+
+#+RESULTS:
+: { orig1: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
+:   orig2: { pos: { x: 1, y: 2 }, length: 10, height: 20 },
+:   final1: { pos: { x: 11, y: 22 }, length: 4, height: 5 },
+:   final2: { pos: { x: 11, y: 22 }, length: 10, height: 20 } }
+
+#+BEGIN_SRC js
+> { orig1:  { pos: { x:  1, y:  2 }, length:  4, height:  5 },
+    orig2:  { pos: { x:  1, y:  2 }, length: 10, height: 20 },
+    final1: { pos: { x: 11, y: 22 }, length:  4, height:  5 },
+    final2: { pos: { x: 11, y: 22 }, length: 10, height: 20 } }
+#+END_SRC
+
+So you can see that even though we only translated ~rect1~, ~rect2~
+ended up moving as well because they shared the same ~point~.  Let's
+try the same thing with immutable ~Rect~s.
+
+#+BEGIN_SRC js
+  const Point = require("point1.js");
+  const Rect = require("rect1.js");
+
+  const point = Point(1, 2);
+  const rect1 = Rect(point, 4, 5);
+  const rect2 = Rect(point, 10, 20);
+
+  const orig1 = rect1.show();
+  const orig2 = rect2.show();
+  const final1 = rect1.translate(10, 20).show();
+  const final2 = rect2.show();
+
+  return {orig1, orig2, final1, final2};
+#+END_SRC
+
+#+RESULTS:
+: { orig1: { pos: { x: 1, y: 2 }, length: 4, height: 5 },
+:   orig2: { pos: { x: 1, y: 2 }, length: 10, height: 20 },
+:   final1: { pos: { x: 11, y: 22 }, length: 4, height: 5 },
+:   final2: { pos: { x: 1, y: 2 }, length: 10, height: 20 } }
+
+#+BEGIN_SRC js
+> { orig1:  { pos: { x:  1, y:  2 }, length:  4, height:  5 },
+    orig2:  { pos: { x:  1, y:  2 }, length: 10, height: 20 },
+    final1: { pos: { x: 11, y: 22 }, length:  4, height:  5 },
+    final2: { pos: { x:  1, y:  2 }, length: 10, height: 20 } }
+#+END_SRC
+
+In this way you can see that the immutable version is less prone to
+strange bugs.  Of course in a simple example it's easy to remember
+that the point is contained in *both* rectangles.  In a large system,
+though, requiring the programmer to remember the state of all the
+objects verges on impossibility.  We are forced to run a debugger and
+inspect the state in the running code.  With the immutable version we
+can reason about the state of the system simply by reading the source
+code.  It's a clear win for immutability, which is why I suggest using
+it as much as you can.
+
+*** Immutability Comes with a Cost
+
+It's incredibly easy to say, "Mutability is bad.  Let's just avoid
+it".  Most programmers I know already realise that mutability causes
+problems.  So why do they continue to write code with mutable state.
+To investigate that I will intriduce an inheritence hierarchy a little
+bit.  We're going to make a square.
+
+A square is just a rectangle with the height the same as the width.
+
+#+BEGIN_SRC js :tangle square1.js
+  const Rect = require("rect1.js");
 
   const Square = (pos, length) => {
     const rect = Rect(pos, length, length);
-    return { ...rect,
+    return {
+       ...rect,
+      show: () =>
+        ({pos: pos.show(), length}),
       translate: (dx, dy) =>
         Square(pos.translate(dx, dy), length)
     };
   };
 
-  const square = Square(Point(1, 2), 4);
-
-  return {
-    square: square.show(),
-    area: square.area(),
-    translated: square.translate(10, 20).show(),
-  };
-#+END_SRC
-
-#+RESULTS:
-: { square: { pos: { x: 1, y: 2 }, length: 4, height: 4 },
-:   area: 16,
-:   translated: { pos: { x: 11, y: 22 }, length: 4, height: 4 } }
-
-#+BEGIN_SRC js
-> { square: { pos: { x: 1, y: 2 }, length: 4, height: 4 },
-    area: 16,
-    translated: { pos: { x: 11, y: 22 }, length: 4, height: 4 } }
+  module.exports = Square;
 #+END_SRC
 
 We're doing something a little bit tricky with the ES6 spread operator
@@ -948,20 +1021,71 @@ thing about this approach is that it does not mutate the parent:
 In earlier version of JavaScript, you would have to write a function
 to do the same thing, so this is really a massive win for ES6.
 
-With this implementation, we're not really in trouble with the Liskov
-Substitution Principle, which requires that users of our `Square` not
-care if it is a `Square` or a `Rect`.  Indeed, our `Square` is
-literally a `Rect`. The little helper function, `extend`, does a
-shallow copy of the `Rect` that we built and then overrides any
-dictionary entries with new ones from `Square`.
+Let's see how the ~Square~ class works:
 
-It's important to understand that the closures from `Rect` are
-*different* that the closures from `Square`.  The closures in `Rect`
-will use the parameters from the call to `Rect`, while the closures in
-`Square` will use the parameters from the call to `Square`.  Since we
-are using immutable values, this is not a problem, because the values
-will all be equal.  However, this is going to cause us problems if
-we mutate any of those parameters.
+#+BEGIN_SRC js
+  const Point = require("point1.js");
+  const Square = require("square1.js");
+
+  const point = Point(1, 2);
+  const square = Square(point, 4);
+
+  const orig = square.show();
+  const translated = square.translate(10, 20).show();
+  const area = square.area();
+
+  return {orig, translated, area};
+#+END_SRC
+
+#+RESULTS:
+: { orig: { pos: { x: 1, y: 2 }, length: 4 },
+:   translated: { pos: { x: 11, y: 22 }, length: 4 },
+:   area: 16 }
+
+#+BEGIN_SRC js
+> { orig:       { pos: { x:  1, y:  2 }, length: 4 },
+    translated: { pos: { x: 11, y: 22 }, length: 4 },
+    area: 16 }
+#+END_SRC
+
+It works pretty well and apart from violating the Liskov Substitution
+Principle, which we will talk about later, there doesn't immediately
+seem to be any problem.  I don't like repitition, though.  There is
+one line that bothers me:
+
+#+BEGIN_SRC js
+      translate: (dx, dy) =>
+        Square(pos.translate(dx, dy), length)
+#+END_SRC
+
+Compare that to the version in ~Rect~:
+
+#+BEGIN_SRC js
+      translate: (dx, dy) =>
+        Rect(pos.translate(dx, dy), length)
+#+END_SRC
+
+It is virtually the same.  In this case the code is pretty trivial, so
+I don't really mind typing it again, but you can imagine cases where
+it might be very difficult.  The only difference is in the type of the
+value that is returned from the function.
+
+The key thing to realise is that the translate method in ~Square~ is not
+the same function as the translate method in ~Rect~.  I'm sure that
+will be a surprising statement for many, so I had better explain
+it.
+
+*** TODO Explain the above
+
+
+*** TODO Explain this
+  It's important to understand that the closures from `Rect` are
+  *different* that the closures from `Square`.  The closures in `Rect`
+  will use the parameters from the call to `Rect`, while the closures in
+  `Square` will use the parameters from the call to `Square`.  Since we
+  are using immutable values, this is not a problem, because the values
+  will all be equal.  However, this is going to cause us problems if
+  we mutate any of those parameters.
 
 ** Thanks
 

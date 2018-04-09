@@ -1,9 +1,8 @@
 
 const Point = (x, y) => {
   const self = {
-    show: () => {
-      return {x: x, y: y};
-    },
+    show: () =>
+      ({x, y}),
     setX: (new_x) =>
       x = new_x,
     setY: (new_y) =>
