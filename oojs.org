@@ -896,7 +896,7 @@ Let's explore what a mutable ~Rect~ would look like:
 
 It seems to work almost identically, so you might be forgiven for
 wondering what the big deal is.  Why do I maintain that immutability
-leads to easier to reason code.  Consider this scenario:
+leads to easier to reason code?  Consider this scenario:
 
 #+BEGIN_SRC js
   const Point = require("mutable_point.js");
@@ -928,9 +928,9 @@ leads to easier to reason code.  Consider this scenario:
     final2: { pos: { x: 11, y: 22 }, length: 10, height: 20 } }
 #+END_SRC
 
-So you can see that even though we only translated ~rect1~, ~rect2~
+You can see that even though we only translated ~rect1~, ~rect2~
 ended up moving as well because they shared the same ~point~.  Let's
-try the same thing with immutable ~Rect~s.
+try the same thing with immutable ~Rects~.
 
 #+BEGIN_SRC js
   const Point = require("point1.js");
@@ -975,7 +975,7 @@ it as much as you can.
 
 It's incredibly easy to say, "Mutability is bad.  Let's just avoid
 it".  Most programmers I know already realise that mutability causes
-problems.  So why do they continue to write code with mutable state.
+problems.  Why do they continue to write code with mutable state?
 To investigate that I will intriduce an inheritence hierarchy a little
 bit.  We're going to make a square.
 
@@ -997,6 +997,9 @@ A square is just a rectangle with the height the same as the width.
 
   module.exports = Square;
 #+END_SRC
+
+You notice that the ~area~ method does not appear in this class.
+That's because we are "inheriting" it from our ~rect~ object.
 
 We're doing something a little bit tricky with the ES6 spread operator
 here.  Essentially, what it does is create a new dictionary, merging
