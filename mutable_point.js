@@ -10,7 +10,6 @@ const Point = (x, y) => {
     translate: (dx, dy) => {
       self.setX(x + dx);
       self.setY(y + dy);
-      return self;
     }
   };
   return self;
