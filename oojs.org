@@ -613,7 +613,7 @@ Let's back up and define that point before we go any further.
 
 *** Create a Point "class"
 
-Now the most obvious way to proceed is to represent a point as a
+The most obvious way to proceed is to represent a point as a
 dictionary, exactly the way we did when we returned the translated
 position.  However, looking at Alan Kay's description of OOP, I'm not
 convinced that this will bring us closer to his vision.  Is there a
@@ -655,7 +655,7 @@ when we dump the object, we just see that we have a dictionary
 containing a function.  Let's amend this slightly.
 
 I'll want to reuse this definition in the future, so I'm going to
-store it to a file called `point1.js`.  I'll use Node's module system
+store it to a file called ~point1.js~.  I'll use Node's module system
 to export and then reimport the "class" we've made.
 
 #+BEGIN_SRC js :tangle point1.js
@@ -720,7 +720,7 @@ a very basic subset of JavaScript, the code is also extremely easy to
 write and read (apart from the ugly way one must return dictionaries).
 It also requires no new syntax for the language.
 
-Warning: if `show` makes you feel uncomfortable, then I think you have
+Warning: if ~show~ makes you feel uncomfortable, then I think you have
 good instincts.  We will discuss this more fully later.
 
 It interesting to consider that our Point "class" is just a function.
@@ -741,7 +741,7 @@ vision.
 What if we wanted a mutable Point object?  Remember that parameters
 passed to a function are mutable.  This means that we can mutate
 ~x~ and ~y~ in our closures returned by ~Point~.  I'll save this
-as `mutable_point.js`.
+as ~mutable_point.js~.
 
 #+BEGIN_SRC js :tangle mutable_point.js
   const Point = (x, y) => {
@@ -765,9 +765,9 @@ as `mutable_point.js`.
 #+END_SRC
 
 Notice that we've added a couple of other facilities here.  Since the
-`Point` is mutable, we might as well translate it by mutating ~x~ and
+~Point~ is mutable, we might as well translate it by mutating ~x~ and
 ~y~.  This requires us to have access to our own object, which is
-easily done by assigning a variable called `self`.
+easily done by assigning a variable called ~self~.
 
 Does it work?
 
@@ -799,7 +799,7 @@ Does it work?
 #+END_SRC
 
 Of course just being able to do something doesn't necessarily mean
-that you *should* do that thing.  Should we make `Point` mutable?
+that you *should* do that thing.  Should we make ~Point~ mutable?
 Generally speaking, you should not make something mutable unless you
 really have to. Immutable functions make reasoning about the code much
 easier.  However, in the next section you will see some examples of
@@ -808,7 +808,7 @@ why we tend to get tempted into using mutable functions.
 *** Four Sided Shapes
 
 Let's go back to the rectangle and see what it looks like if we use an
-immutable `Point` class.
+immutable ~Point~ class.
 
 #+BEGIN_SRC js :tangle rect1.js
   const Rect = (pos, length, height) => {
@@ -1079,10 +1079,10 @@ it.
 
 
 *** TODO Explain this
-  It's important to understand that the closures from `Rect` are
-  *different* that the closures from `Square`.  The closures in `Rect`
-  will use the parameters from the call to `Rect`, while the closures in
-  `Square` will use the parameters from the call to `Square`.  Since we
+  It's important to understand that the closures from ~Rect~ are
+  *different* that the closures from ~Square~.  The closures in ~Rect~
+  will use the parameters from the call to ~Rect~, while the closures in
+  ~Square~ will use the parameters from the call to ~Square~.  Since we
   are using immutable values, this is not a problem, because the values
   will all be equal.  However, this is going to cause us problems if
   we mutate any of those parameters.
