@@ -690,7 +690,7 @@ to export and then reimport the "class" we've made.
 #+END_SRC
 
 Now we've add an accessor that let's us inspect the private
-attributes.  The interesting thing here is that our Point objects (at
+attributes.  The interesting thing here is that our Point object (at
 least from the perspective of the attributes) is *still* immutable.
 We can't change it.  For example:
 
@@ -979,7 +979,7 @@ problems.  Why do they continue to write code with mutable state?
 To investigate that I will intriduce an inheritence hierarchy a little
 bit.  We're going to make a square.
 
-A square is just a rectangle with the height the same as the width.
+A square is just a rectangle with the height the same as the length.
 
 #+BEGIN_SRC js :tangle square1.js
   const Rect = require("rect1.js");
@@ -1050,10 +1050,10 @@ Let's see how the ~Square~ class works:
     area: 16 }
 #+END_SRC
 
-It works pretty well and apart from violating the Liskov Substitution
-Principle, which we will talk about later, there doesn't immediately
-seem to be any problem.  I don't like repitition, though.  There is
-one line that bothers me:
+It works pretty well and apart from potentially violating the Liskov
+Substitution Principle, which we will talk about later, there doesn't
+immediately seem to be any problem.  I don't like repetition, though.
+There is one line that bothers me:
 
 #+BEGIN_SRC js
       translate: (dx, dy) =>
@@ -1070,14 +1070,187 @@ Compare that to the version in ~Rect~:
 It is virtually the same.  In this case the code is pretty trivial, so
 I don't really mind typing it again, but you can imagine cases where
 it might be very difficult.  The only difference is in the type of the
-value that is returned from the function.
+value that is returned from the function. What this means is that the
+translate method in ~Square~ is not the same function as the translate
+method in ~Rect~.  I'm sure that will be a surprising statement for
+many, so to explain it, let's implement a mutable version of ~Square~.
 
-The key thing to realise is that the translate method in ~Square~ is not
-the same function as the translate method in ~Rect~.  I'm sure that
-will be a surprising statement for many, so I had better explain
-it.
+#+BEGIN_SRC js :tangle mutable_square.js
+  const Rect = require("mutable_rect.js");
 
-*** TODO Explain the above
+  const Square = (pos, length) => {
+    const rect = Rect(pos, length, length);
+    return {
+       ...rect,
+      show: () =>
+        ({pos: pos.show(), length})
+    };
+  };
+
+  module.exports = Square;
+#+END_SRC
+
+#+BEGIN_SRC js
+  const Point = require("mutable_point.js");
+  const Square = require("mutable_square.js");
+
+  const point = Point(1, 2);
+  const square = Square(point, 4);
+
+  const orig = square.show();
+  square.translate(10, 20);
+  const translated = square.show();
+  const area = square.area();
+
+  return {orig, translated, area};
+#+END_SRC
+
+#+RESULTS:
+: { orig: { pos: { x: 1, y: 2 }, length: 4 },
+:   translated: { pos: { x: 11, y: 22 }, length: 4 },
+:   area: 16 }
+
+#+BEGIN_SRC js
+> { orig:       { pos: { x:  1, y:  2 }, length: 4 },
+    translated: { pos: { x: 11, y: 22 }, length: 4 },
+    area: 16 }
+#+END_SRC
+
+You will notice that in our mutable version, we don't have to rewrite
+~translate~.  The functionality for ~Square~ is exactly the same as
+for ~Rect~ so we can just inherit it.  However, it goes a bit further
+than that.  In our immutable version, the functionality is almost the
+same.  The only difference is the return type.  The ~Rect~ version
+returns a ~Rect~ and the ~Square~ version returns a ~Square~.  In the
+mutable version, we always return ~null~.
+
+Even if we decided to make a new implementation of ~translate~ in the
+mutable version for some reason, we would still return ~null~.  This
+means that whenever we have a ~Square~ it works exactly the same as a
+~Rectangle~.  We can substitute a ~Rectangle~ with a ~Square~ in our
+code and it will work *exactly* the same.
+
+With the immutable version, this is not true.  ~translate~ returns
+different types of objects.  At the moment, both ~Square~ and
+~Rectangle~ are roughly equivalent, so you can get away with it, but
+as we will see soon, it can become much trickier.
+
+Earlier I mentioned the Liskov Substitution Principle.  A simple
+statement of this principle (which I lifted from Wikipedia) is
+that if S is a subtype of T, then objects of type T in a
+program may be replaced with objects of type S without altering any of
+the desirable properties of that program.
+
+*** Covariance and Contravariance
+
+I always find the Liskov Substitution Principle, as stated previously,
+to be a vague.  What does "altering any of the desirable properties"
+really mean? Another way to state it is that inherited methods must
+have the following properties:
+
+  - The return types for the functions must be covariant
+  - The arguments for the functions must be contravariant
+
+There are a lot of technical ways to describe covariance and
+contravariance, but for the purposes of this post I'll discuss a more
+intuitive way to look at it.  While I discuss this, it is important to
+keep in mind that the co/contra-variance goes in the direction of
+the *child class* to the *base class*.  Personally, I find that
+a bit confusing, but that's how it is described in the literature.
+
+**** Covariance
+
+Imagine you have an array that contains numbers.  You want to convert
+that array to one that contains letters (perhaps 1 becomes "a",
+2 becomes "b", etc).  We can easily write a function that maps
+integers to letters using that rule.  Once we have such a function,
+you can imagine that it is trivial to take all of the integers out of
+the array, convert them to letters, and then put the result back into
+an array.  Indeed, in Javascript we would likely use the ~map~
+function on ~Array~ to do such a thing (in other languages the
+function is sometimes called ~fmap~).
+
+If you can do such a thing, you have a "covariant" relationship.  In
+other words, an array of numbers is covariant with an array of
+letters.  Earlier we said that the return types of inherited functions
+must be covariant.  Let's explain that a bit.
+
+Imagine that an object is just a container for data.  It's easy to
+imagine because that's usually how we think of objects.  A ~Rect~
+object contains some data (a ~Point~ and 2 numbers).  A ~Square~
+contains different data (a ~Point~ and 1 number).  What the Liskov
+Substition Principle states is that if I have a method in the base
+class that returns a ~Rect~ and override it with a method in the child
+class that returns a ~Square~, then ~Square~ must be covariant with
+~Rect~. It is covariant if, given that I have a function that converts
+the contained data from ~Square~ data to ~Rect~ data, using it
+I can construct a ~Rect~ from a ~Square~.
+
+Of course we can do that.  The positions are the same, the length is
+the same, and even though I don't have a height in ~Square~, I can
+construct one from the length.  Using that, I can construct a ~Rect~
+from a ~Square~.
+
+Can you imagine a situation where the types are *not* covariant?
+An example might be to have a ~Rect~ that has a colour, but a
+~Square~ that does not have a colour.  There is no way to convert the
+~Square~ to a ~Rect~ and so ~Square~ and ~Rect~ are not covariant.
+
+By looking at this you can understand why return values from inherited
+functions must be covariant.  If I have code that deals with ~Rect~
+values and I give it a ~Square~ value, then the methods on ~Square~ must
+return values that can be converted to the values that a ~Rect~ would
+return.
+
+In our immutable ~Square~ implemenation, we return a ~Square~ from
+~translate~ instead of a ~Rect~.  What the Liskov Substitution
+Principle says is that as long as ~Square~ can be trivially converted
+to ~Rect~ we are OK.  It's important to note that "trivially
+converted" here means that the system takes care of it for you.  You
+wouldn't actually write any code to covert it yourself.
+
+**** Contravariance
+
+As you might expect, "contravariance" is the opposite of covariance.
+Imagine again that we have an array of numbers and we want an array of
+letters.  However, instead of a function that converts numbers to
+letters, we have a function that converts letters to numbers.  If we
+can construct our array of letters, then we have a contravariant
+relationship.
+
+There is no nice way to say this: contravariance is weird.  Normally
+we don't deal with contravariant relationships, so it's hard to
+imagine how that would work.  Let's look at the statement from
+the Liskov Substitution Problem: the arguments of the inherited
+functions must be contravariant.
+
+What this means that if I have a function in ~Rect~ and override it in
+~Square~, there must be a function that converts the arguments from
+the ~Rect~ version into the arguments in the ~Square~ version.  Like
+the example of the numbers and letters, it's hard to imagine a
+situation where this would work.  Of course it works if the arguments
+are the *same*.  I'll try to explain how it might work if the
+arguments are different.
+
+Imagine that we had a method on a base class, called ~Base~.  The
+arguments for this method are integer numbers.  We have a derived
+class called ~Child~.  The arguments for the method on the child class
+are floating point numbers.  Imagine that we can automatically convert
+integers to floating point numbers.
+
+In this case, the arguments of the methods in ~Child~ and ~Base~ are
+contravariant.  I can convert integers to floats (~Base~ to ~Child~)
+and therefore if I have code that expects a ~Base~ object, I can send
+it a ~Child~ object and it will still work -- the system will
+automatically convert the integers I use to the floating point numbers
+that ~Child~ wants.
+
+In practice, you will usually not write methods whose arguments differ
+between base and child classes.  However, it can often occur if you
+have optional values.  In that case the base class can have an
+optional value, while the child class can either omit it or make it
+required.  We can always convert from base class argument to child
+class argument lists.
 
 
 *** TODO Explain this
@@ -1105,5 +1278,5 @@ are looking for work.
 
 Although I was financially supported by Palatinate Group in this
 effort, the views and opinions expressed in this repository are those
-of the author and do not necessarily relect the policy of Palatinate
+of the author and do not necessarily relect the views of Palatinate
 Group or any affiliated entity.
