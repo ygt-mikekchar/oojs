@@ -178,7 +178,7 @@ strings together returns an immutable string.  This surprised me
 slightly when I looked into it, but there are some performance reasons
 why immutable strings are beneficial.
 
-There are only a few value types that are mutable in Javascript.  Anyone
+There are only a few value types that are mutable in JavaScript.  Anyone
 who has worked with immutable data structures before knows that they
 can be tricky to work with.  For performance reasons, it's often
 helpful to have mutable arrays, and JavaScript's arrays are mutable.
@@ -689,7 +689,7 @@ to export and then reimport the "class" we've made.
 > { orig: { x: 1, y: 2 }, translated: { x: 5, y: 7 } }
 #+END_SRC
 
-Now we've add an accessor that let's us inspect the private
+Now we've added an accessor that let's us inspect the private
 attributes.  The interesting thing here is that our Point object (at
 least from the perspective of the attributes) is *still* immutable.
 We can't change it.  For example:
@@ -976,7 +976,7 @@ it as much as you can.
 It's incredibly easy to say, "Mutability is bad.  Let's just avoid
 it".  Most programmers I know already realise that mutability causes
 problems.  Why do they continue to write code with mutable state?
-To investigate that I will intriduce an inheritence hierarchy a little
+To investigate that I will introduce an inheritence hierarchy a little
 bit.  We're going to make a square.
 
 A square is just a rectangle with the height the same as the length.
@@ -1144,7 +1144,7 @@ the desirable properties of that program.
 *** Covariance and Contravariance
 
 I always find the Liskov Substitution Principle, as stated previously,
-to be a vague.  What does "altering any of the desirable properties"
+to be a bit vague.  What does "altering any of the desirable properties"
 really mean? Another way to state it is that inherited methods must
 have the following properties:
 
@@ -1166,7 +1166,7 @@ that array to one that contains letters (perhaps 1 becomes "a",
 integers to letters using that rule.  Once we have such a function,
 you can imagine that it is trivial to take all of the integers out of
 the array, convert them to letters, and then put the result back into
-an array.  Indeed, in Javascript we would likely use the ~map~
+an array.  Indeed, in JavaScript we would likely use the ~map~
 function on ~Array~ to do such a thing (in other languages the
 function is sometimes called ~fmap~).
 
@@ -1202,12 +1202,12 @@ values and I give it a ~Square~ value, then the methods on ~Square~ must
 return values that can be converted to the values that a ~Rect~ would
 return.
 
-In our immutable ~Square~ implemenation, we return a ~Square~ from
+In our immutable ~Square~ implementation, we return a ~Square~ from
 ~translate~ instead of a ~Rect~.  What the Liskov Substitution
 Principle says is that as long as ~Square~ can be trivially converted
 to ~Rect~ we are OK.  It's important to note that "trivially
 converted" here means that the system takes care of it for you.  You
-wouldn't actually write any code to covert it yourself.
+wouldn't actually write any code to convert it yourself.
 
 **** Contravariance
 
@@ -1255,7 +1255,7 @@ class argument lists.
 
 *** TODO Explain this
   It's important to understand that the closures from ~Rect~ are
-  *different* that the closures from ~Square~.  The closures in ~Rect~
+  *different* than the closures from ~Square~.  The closures in ~Rect~
   will use the parameters from the call to ~Rect~, while the closures in
   ~Square~ will use the parameters from the call to ~Square~.  Since we
   are using immutable values, this is not a problem, because the values
